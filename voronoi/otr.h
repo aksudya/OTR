@@ -2,7 +2,7 @@
 #include <CGAL/Exact_predicates_inexact_constructions_kernel.h>
 #include <CGAL/point_generators_2.h>
 #include <CGAL/Optimal_transportation_reconstruction_2.h>
-#include <GL/GLUT.h>
+#include <GLUT.h>
 #include <iostream>
 #include <cmath>
 #include <random>
