@@ -2,7 +2,7 @@
 #include <CGAL/Exact_predicates_inexact_constructions_kernel.h>
 #include <CGAL/point_generators_2.h>
 #include <CGAL/Optimal_transportation_reconstruction_2.h>
-#include <GLUT.h>
+#include <GL/GLUT.h>
 #include <iostream>
 #include <cmath>
 #include <random>
@@ -53,5 +53,5 @@ public:
 	void Init(vector<Point> input);
 
 	void InitPriQueue();
-
+	bool IsCollapsable(Half_edge e);		//判断边是否可以合并
 };

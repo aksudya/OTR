@@ -17,4 +17,5 @@ int main()
 
 	OTR a;
 	a.Init(points_re);
+	a.InitPriQueue();
 }
