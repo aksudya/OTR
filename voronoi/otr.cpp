@@ -23,7 +23,7 @@ void OTR::InitPriQueue()
 		kk++;
 		if(kk==5)
 		{
-			delaunay_temp.collapse_edge(*eiter);
+			delaunay_temp;
 			//break;
 		}
 
