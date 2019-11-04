@@ -11,7 +11,7 @@ void otr_extrat()
 	//std::vector<Point> points_re;
 
 	//CGAL::Random_points_on_circle_2<Point> point_generator(1.);
-	CGAL::Random rng(1);
+	CGAL::Random rng(2);
 	CGAL::Random_points_in_square_2<Point> point_generator(1., rng);
 	CGAL::cpp11::copy_n(point_generator, 10, std::back_inserter(points_1));
 
@@ -36,24 +36,118 @@ void lines_draw(double t)
 	glPushMatrix();
 	glColor3f(0.0, 1.0, t);
 	glLineWidth(1);
+	
+	int kk = 0;
+
 	glBegin(GL_LINES);
 	//Delaunay dt = a.delaunay_temp;
 
-	for (auto eit = a.delaunay_temp.edges_begin(); eit != a.delaunay_temp.edges_end(); eit++)
+
+	
+
+	for (auto eit = a.tgl1.edges_begin(); eit != a.tgl1.edges_end(); eit++)
 	{
-		//std::cout << "2 " << eit->first << " " << eit->second << std::endl;
+		vertex_handle start_p = eit->first->vertex(a.tgl1.cw(eit->second));
+		vertex_handle end_p = eit->first->vertex(a.tgl1.ccw(eit->second));
 
-		//std::cout << "first " << points[eit->first].hx() << " " << points[eit->first].hy() << std::endl;
-		//std::cout << "second " << points[eit->second].hx() << " " << points[eit->second].hy() << std::endl;
+		glVertex2f(start_p->point().x(), start_p->point().y());
+		glVertex2f(end_p->point().x(), end_p->point().y());
 
-		//glBegin(GL_LINE);
-		Segment s = a.delaunay_temp.segment(eit);
 
-		Point a = s.point(0);
-		Point b = s.point(1);
+	}
+	glEnd();
 
-		glVertex2f(a.x(), a.y());
-		glVertex2f(b.x(), b.y());
+	/*glColor3f(0.0, 1.0, 1.0);
+	glBegin(GL_LINES);
+
+	for (auto eit = a.tgl1.edges_begin(); eit != a.tgl1.edges_end(); eit++)
+	{
+		kk++;
+
+		vertex_handle start_p = eit->first->vertex(a.tgl1.ccw(eit->second));
+		vertex_handle end_p = eit->first->vertex(a.tgl1.cw(eit->second));
+
+		if (kk == 15)
+		{
+			auto cviter = a.tgl1.incident_vertices(start_p);
+
+			for (int i = 0; i < start_p->degree(); ++i)
+			{
+				Point aa = cviter->point();
+				auto temp = cviter;
+				temp++;
+				Point bb = temp->point();
+				glVertex2f(aa.x(), aa.y());
+				glVertex2f(bb.x(), bb.y());
+				cviter++;
+			}
+		}
+
+
+
+
+
+		
+
+	}
+
+	glEnd();*/
+
+	glColor3f(1, 1, 1);
+	glBegin(GL_LINES);
+	//Delaunay dt = a.delaunay_temp;
+
+	for (auto eit = a.tgl2.edges_begin(); eit != a.tgl2.edges_end(); eit++)
+	{
+		vertex_handle start_p = eit->first->vertex(a.tgl2.ccw(eit->second));
+		vertex_handle end_p = eit->first->vertex(a.tgl2.cw(eit->second));
+
+		glVertex2f(start_p->point().x(), start_p->point().y());
+		glVertex2f(end_p->point().x(), end_p->point().y());
+
+
+	}
+	glEnd();
+
+
+
+
+	glColor3f(0.5, 0, 0.5);
+	glBegin(GL_LINES);
+
+	for (auto eit = a.block_edge.begin(); eit != a.block_edge.end(); eit++)
+	{
+
+
+		//vertex_handle start_p = eit->first->vertex(a.tgl1.ccw(eit->second));
+		//vertex_handle end_p = eit->first->vertex(a.tgl1.cw(eit->second));
+
+		//if (kk == 1)
+		//{
+		//	auto cviter = a.tgl1.incident_vertices(start_p);
+
+		//	for (int i = 0; i < start_p->degree(); ++i)
+		//	{
+		//		Point aa = cviter->point();
+		//		auto temp = cviter;
+		//		temp++;
+		//		Point bb = temp->point();
+		//		glVertex2f(aa.x(), aa.y());
+		//		glVertex2f(bb.x(), bb.y());
+		//		cviter++;
+		//	}
+		//}
+
+
+
+
+		//Segment s = a.tgl1.segment(*eit);
+
+		//Point a = s.point(0);
+		//Point b = s.point(1);
+
+		glVertex2f(eit->first->point().x(), eit->first->point().y());
+		glVertex2f(eit->second->point().x(), eit->second->point().y());
 		//glEnd();
 
 	}
@@ -72,7 +166,7 @@ void points_draw_dt(double t)
 	//Delaunay dt = a.delaunay_temp;
 
 	glBegin(GL_POINTS);
-	for (auto iter = a.delaunay_input.vertices_begin(); iter != a.delaunay_input.vertices_end(); iter++)
+	for (auto iter = a.tgl2.vertices_begin(); iter != a.tgl2.vertices_end(); iter++)
 	{
 		glVertex2f(iter->point().hx(), iter->point().hy());
 	}
@@ -103,13 +197,13 @@ void display(void)
 	//RandomInit(NumSeed);
 	glClear(GL_COLOR_BUFFER_BIT);
 	
-	points_draw_dt(0.5);
+	//points_draw_dt(0.5);
 	//points_draw(0.5);
-	lines_draw(0.5);
+	
 
 	a.InitPriQueue();
-
-	//points_draw_dt(1);
+	lines_draw(0.5);
+	points_draw_dt(1);
 	//lines_draw(1);
 
 	glutSwapBuffers();
