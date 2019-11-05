@@ -11,9 +11,9 @@ void otr_extrat()
 	//std::vector<Point> points_re;
 
 	//CGAL::Random_points_on_circle_2<Point> point_generator(1.);
-	CGAL::Random rng(2);
+	CGAL::Random rng(100);
 	CGAL::Random_points_in_square_2<Point> point_generator(1., rng);
-	CGAL::cpp11::copy_n(point_generator, 10, std::back_inserter(points_1));
+	CGAL::cpp11::copy_n(point_generator, 100, std::back_inserter(points_1));
 
 	for (auto iter = points_1.begin(); iter != points_1.end(); iter++)
 	{
@@ -43,8 +43,6 @@ void lines_draw(double t)
 	//Delaunay dt = a.delaunay_temp;
 
 
-	
-
 	for (auto eit = a.tgl1.edges_begin(); eit != a.tgl1.edges_end(); eit++)
 	{
 		vertex_handle start_p = eit->first->vertex(a.tgl1.cw(eit->second));
@@ -57,41 +55,35 @@ void lines_draw(double t)
 	}
 	glEnd();
 
-	/*glColor3f(0.0, 1.0, 1.0);
-	glBegin(GL_LINES);
+	//glColor3f(0.0, 1.0, 1.0);
+	//glBegin(GL_LINES);
 
-	for (auto eit = a.tgl1.edges_begin(); eit != a.tgl1.edges_end(); eit++)
-	{
-		kk++;
+	//for (auto eit = a.tgl1.edges_begin(); eit != a.tgl1.edges_end(); eit++)
+	//{
+	//	kk++;
 
-		vertex_handle start_p = eit->first->vertex(a.tgl1.ccw(eit->second));
-		vertex_handle end_p = eit->first->vertex(a.tgl1.cw(eit->second));
+	//	vertex_handle start_p = eit->first->vertex(a.tgl1.ccw(eit->second));
+	//	vertex_handle end_p = eit->first->vertex(a.tgl1.cw(eit->second));
 
-		if (kk == 15)
-		{
-			auto cviter = a.tgl1.incident_vertices(start_p);
+	//	if (kk == 15)
+	//	{
+	//		auto cviter = a.tgl1.incident_vertices(start_p);
 
-			for (int i = 0; i < start_p->degree(); ++i)
-			{
-				Point aa = cviter->point();
-				auto temp = cviter;
-				temp++;
-				Point bb = temp->point();
-				glVertex2f(aa.x(), aa.y());
-				glVertex2f(bb.x(), bb.y());
-				cviter++;
-			}
-		}
+	//		for (int i = 0; i < start_p->degree(); ++i)
+	//		{
+	//			Point aa = cviter->point();
+	//			auto temp = cviter;
+	//			temp++;
+	//			Point bb = temp->point();
+	//			glVertex2f(aa.x(), aa.y());
+	//			glVertex2f(bb.x(), bb.y());
+	//			cviter++;
+	//		}
+	//	}
 
+	//}
 
-
-
-
-		
-
-	}
-
-	glEnd();*/
+	//glEnd();
 
 	glColor3f(1, 1, 1);
 	glBegin(GL_LINES);

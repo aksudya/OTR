@@ -1,4 +1,4 @@
-#include "otr.h"
+﻿#include "otr.h"
 
 OTR::OTR()
 {
@@ -9,6 +9,7 @@ void OTR::Init(vector<Point> input)
 	points_input = input;
 	delaunay_input.insert(input.begin(), input.end());
 	tgl1 = delaunay_input;
+	isborder = false;
 	//delaunay_temp = delaunay_input;
 }
 
@@ -48,7 +49,7 @@ void OTR::InitPriQueue()
 			}
 		}
 
-		if (kk == 15)
+		if (kk == 150)
 		{
 			//tgl2 = tgl1;
 			//Edge t_edge = twin_edge(*eiter);
@@ -57,8 +58,12 @@ void OTR::InitPriQueue()
 				FlipEdge(t2_edge);
 				block_edge.clear();
 			}
-			Edge t_edge = twin_edge(t2_edge);
-			tgl2.tds().join_vertices(t_edge.first, t_edge.second);
+			if (!isborder)
+			{
+				Edge t_edge = twin_edge(t2_edge);
+				tgl2.tds().join_vertices(t_edge.first, t_edge.second);
+			}
+			isborder = false;
 			break;
 		}
 		//
@@ -96,19 +101,53 @@ bool OTR::IsCollapsable(Edge &e)
 
 	auto cviter = tgl2.incident_vertices(start_p);
 	bool flag_collapsable = true;
+	
 	for (int i = 0; i < start_p->degree(); ++i)
 	{
 		auto temp = cviter;
 		temp++;
+		if(tgl2.is_infinite(cviter)||tgl2.is_infinite(temp))
+		{
+			isborder = true;
+			tgl2.remove(start_p);
+			return true;
+		}
+		//if((i==start_p->degree()-1)&&temp!= tgl2.incident_vertices(start_p))
+		//{
+		//	//tgl2.remove(start_p);
+		//	break;
+		//}
 
-		auto xj_a = cviter->point() - end_p->point();
-		auto a_b = temp->point() - cviter->point();
+		double cvx = 0;
+		double cvy = 0;
+		double endx = 0;
+		double endy = 0;
+		double tempx = 0;
+		double tempy = 0;
 
-		
+		cvx = cviter->point().x();
+		cvy = cviter->point().y();
 
-		double cross_product = xj_a.x() * a_b.y() - xj_a.y() * a_b.x();
+		endx = end_p->point().x();
+		endy = end_p->point().y();
 
-		if(cross_product<-DBL_MIN)		//˳ʱ��		todo
+		tempx = temp->point().x();
+		tempy = temp->point().y();
+
+		//auto xj_a = cviter->point() - end_p->point();
+		//auto a_b = temp->point() - cviter->point();
+
+		double xjax = cvx - endx;
+		double xjay = cvy - endy;
+		double abx = tempx - cvx;
+		double aby = tempy - cvy;
+
+		//double eps = 1e-9;
+		//bool kkkkkk=abs(a_b.x()) < eps;
+
+		double cross_product = xjax * aby - xjay * abx;
+
+		if(cross_product<-DBL_MIN)		//		顺时针 todo
 		{
 			vertex_pair p(cviter, temp);
 			block_edge.push_back(p);
@@ -147,7 +186,7 @@ void OTR::FlipEdge(Edge& e)
 		Point *ints_point;
 		if (result)
 		{
-			ints_point = boost::get<Point>(&*result);		//����
+			ints_point = boost::get<Point>(&*result);		//获取距交点长度
 		}
 		
 		double dist = squared_distance(*ints_point, target_vertex(e)->point());

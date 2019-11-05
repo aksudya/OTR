@@ -5,7 +5,7 @@
 
 #include <CGAL/Polygon_2.h>
 #include <CGAL/Periodic_2_triangulation_2.h>
-#include <GLUT.h>
+#include <gl/GLUT.h>
 #include <iostream>
 #include <cmath>
 #include <random>
@@ -38,7 +38,7 @@ public:
 
 	bool operator < (const pri_queue_item& a) const 
 	{
-		return cost > a.cost;//��Сֵ���� 
+		return cost > a.cost;	//最大值
 	}
 };
 
@@ -53,23 +53,24 @@ public:
 
 	//Delaunay delaunay_temp;
 
-	priority_queue<pri_queue_item> half_edge_queue;					//���ȶ���
+	priority_queue<pri_queue_item> half_edge_queue;					//代价函数的优先队列
 
-	map<vertex_handle, vector<Point>> vertex_points_map;			//����䵽��
-	map<Edge, vector<Point>> edge_points_map;					//����䵽����
+	map<vertex_handle, vector<Point>> vertex_points_map;			//点到顶点的分配
+	map<Edge, vector<Point>> edge_points_map;					//点到边的分配
 
-	map<vertex_handle, vector<Point>> vertex_points_map_temp;			//����䵽��	 ��ʱ
-	map<Edge, vector<Point>> edge_points_map_temp;					//����䵽����	��ʱ
+	map<vertex_handle, vector<Point>> vertex_points_map_temp;			//
+	map<Edge, vector<Point>> edge_points_map_temp;					//
 
 	vector<vertex_pair> block_edge;				//
 
 	OTR();
 
+	bool isborder;
 
 	void Init(vector<Point> input);
 
 	void InitPriQueue();
-	bool IsCollapsable(Edge &e);		//�жϱ��Ƿ���Ժϲ�
+	bool IsCollapsable(Edge &e);		//
 	void FlipEdge(Edge& e);
 
 	vertex_handle source_vertex(Edge& edge)
