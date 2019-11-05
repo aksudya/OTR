@@ -63,6 +63,8 @@ public:
 
 	vector<vertex_pair> block_edge;				//
 
+	vector<Point> assin_points;					//待分配的顶点
+
 	OTR();
 
 	bool isborder;
@@ -72,6 +74,9 @@ public:
 	void InitPriQueue();
 	bool IsCollapsable(Edge &e);		//
 	void FlipEdge(Edge& e);
+	void MakeCollap(Edge& e);	//合并边，合并后的结果在tgl2中
+
+	double CaculateAssinCost();		//计算当前分配方案总代价
 
 	vertex_handle source_vertex(Edge& edge)
 	{

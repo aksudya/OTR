@@ -49,23 +49,41 @@ void OTR::InitPriQueue()
 			}
 		}
 
-		if (kk == 150)
-		{
+		MakeCollap(t2_edge);
+
+		//caculate cost
+
+		assin_points.pop_back();
+
+
+
+		tgl2 = tgl1;
+		Edge t2_edge_twin = twin_edge(t2_edge);
+		MakeCollap(t2_edge_twin);
+
+		//caculate cost
+
+		assin_points.pop_back();
+
+		//if (kk == 150)
+		//{
 			//tgl2 = tgl1;
 			//Edge t_edge = twin_edge(*eiter);
-			while (!IsCollapsable(t2_edge))
-			{
-				FlipEdge(t2_edge);
-				block_edge.clear();
-			}
-			if (!isborder)
-			{
-				Edge t_edge = twin_edge(t2_edge);
-				tgl2.tds().join_vertices(t_edge.first, t_edge.second);
-			}
-			isborder = false;
-			break;
-		}
+			//while (!IsCollapsable(t2_edge))
+			//{
+			//	FlipEdge(t2_edge);
+			//	block_edge.clear();
+			//}
+			//if (!isborder)
+			//{
+			//	Edge t_edge = twin_edge(t2_edge);
+			//	tgl2.tds().join_vertices(t_edge.first, t_edge.second);
+			//	block_edge.clear();
+			//}
+			//block_edge.clear();
+			//isborder = false;
+			//break;
+		//}
 		//
 
 
@@ -88,10 +106,33 @@ void OTR::InitPriQueue()
 		Point a = s.point(0);
 		Point b = s.point(1);*/
 	}
-
+	cout << kk;
 	//delaunay_input = delaunay_temp;
 }
 
+void OTR::MakeCollap(Edge& e)
+{
+	assin_points.push_back(source_vertex(e)->point());
+	while (!IsCollapsable(e))
+	{
+		FlipEdge(e);
+		block_edge.clear();
+	}
+	if (!isborder)
+	{
+		Edge t_edge = twin_edge(e);
+		tgl2.tds().join_vertices(t_edge.first, t_edge.second);
+		block_edge.clear();
+	}
+	block_edge.clear();
+	isborder = false;
+}
+
+double OTR::CaculateAssinCost()
+{
+
+	return 0.0;
+}
 
 bool OTR::IsCollapsable(Edge &e)
 {
@@ -260,6 +301,8 @@ void OTR::FlipEdge(Edge& e)
 		ei = twin_edge(pre_edge);
 	}*/
 }
+
+
 
 bool OTR::is_flippable(Edge& edge)
 {
