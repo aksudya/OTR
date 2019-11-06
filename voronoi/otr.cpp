@@ -51,7 +51,15 @@ void OTR::InitPriQueue()
 
 		MakeCollap(t2_edge);
 
+		double cost = CaculateAssinCost();
+		pri_queue_item pi;
+		pi.half_edge = t2_edge;
+		pi.cost = cost;
+		half_edge_queue.push(pi);
+		vertex_points_map_temp.clear();
+		edge_points_map_temp.clear();
 		//caculate cost
+
 
 		assin_points.pop_back();
 
@@ -61,6 +69,14 @@ void OTR::InitPriQueue()
 		Edge t2_edge_twin = twin_edge(t2_edge);
 		MakeCollap(t2_edge_twin);
 
+
+		double cost1 = CaculateAssinCost();
+		pri_queue_item pi1;
+		pi1.half_edge = t2_edge_twin;
+		pi1.cost = cost;
+		half_edge_queue.push(pi1);
+		vertex_points_map_temp.clear();
+		edge_points_map_temp.clear();
 		//caculate cost
 
 		assin_points.pop_back();
@@ -130,8 +146,207 @@ void OTR::MakeCollap(Edge& e)
 
 double OTR::CaculateAssinCost()
 {
+	
+	for (auto apit=assin_points.begin();apit!=assin_points.end();apit++)
+	{
+		Face_handle face_now;
+		for (auto fit=tgl2.all_faces_begin();fit!=tgl2.all_faces_end();fit++)
+		{
+			if(face_has_point(*apit,fit))
+			{
+				face_now = fit;
+			}
+		}
 
-	return 0.0;
+		Edge nearest_edge = find_nearest_edge(face_now, *apit);
+		auto iter = edge_points_map_temp.find(nearest_edge);
+
+		if (iter != edge_points_map_temp.end())
+		{
+			_Cost cost = iter->second;
+			cost.assined_points.push_back(*apit);
+			iter->second = cost;
+		}	
+		else
+		{
+			_Cost cost;
+			cost.assined_points.push_back(*apit);
+			edge_points_map_temp.insert(pair<Edge, _Cost>(nearest_edge,cost));
+		}
+	}
+
+	double cost=CaculateEachEdgeCost();
+
+
+	return cost;
+}
+
+double OTR::CaculateEachEdgeCost()
+{
+	double totalcost = 0;
+	for (auto emit=edge_points_map_temp.begin();emit!=edge_points_map_temp.end();emit++)
+	{
+		Edge e = emit->first;
+		_Cost cost = emit->second;
+		CaculateNormalCost(e, cost);
+		CaculateTangentialCost(e, cost);
+		cost.to_edge_cost = cost.normal_cost + cost.tangential_cost;
+		CaculateVertexCost(e, cost);
+		if(cost.to_edge_cost<cost.to_vertex_cost)		//分配给边
+		{
+			cost.total_cost = cost.to_edge_cost;
+			totalcost += cost.total_cost;
+			emit->second = cost;
+		}
+		else									//重新分配给顶点
+		{
+			cost.total_cost = cost.to_vertex_cost;
+			totalcost += cost.total_cost;
+			AssinToVertex(e, cost);
+			cost.assin = 1;						//todo
+			emit->second = cost;
+		}
+	}
+	return totalcost;
+}
+
+void OTR::AssinToVertex(Edge e, _Cost& c)
+{
+	const Point ps = source_vertex(e)->point();
+	const Point pt = target_vertex(e)->point();
+	for (auto pit = c.assined_points.begin(); pit != c.assined_points.end(); pit++)
+	{
+		double dists = squared_distance(*pit, ps);
+		double distt = squared_distance(*pit, pt);
+		if (dists < distt)	//分配给s
+		{
+			auto iter = vertex_points_map_temp.find(source_vertex(e));
+
+			if (iter != vertex_points_map_temp.end())
+			{
+				iter->second = c;
+			}
+			else
+			{
+				vertex_points_map_temp.insert(pair<vertex_handle, _Cost>(source_vertex(e), c));
+			}
+		}
+		else
+		{
+			auto iter = vertex_points_map_temp.find(target_vertex(e));
+
+			if (iter != vertex_points_map_temp.end())
+			{
+				iter->second = c;
+			}
+			else
+			{
+				vertex_points_map_temp.insert(pair<vertex_handle, _Cost>(target_vertex(e), c));
+			}
+		}
+	}
+}
+
+void OTR::CaculateNormalCost(Edge e, _Cost& c)
+{
+	double normal_cost = 0;
+	for (auto pit=c.assined_points.begin();pit!=c.assined_points.end();pit++)
+	{
+		normal_cost += get_p_to_edge(*pit, e);
+	}
+	c.normal_cost = normal_cost;
+}
+
+void OTR::CaculateTangentialCost(Edge e, _Cost& c)
+{
+	double tangential_cost = 0;
+	double centerCord;		//每段中点的坐标
+	const Point ps = source_vertex(e)->point();
+	const Point pt = target_vertex(e)->point();
+	double l = squared_distance(ps, pt)/c.assined_points.size();	//每段的长度
+	double sql = l * l;
+	centerCord = l / 2;
+	for (auto pit = c.assined_points.begin(); pit != c.assined_points.end(); pit++)
+	{
+		Segment seg(ps, pt);
+		Line le = seg.supporting_line();
+		Point project = le.projection(*pit);
+		double dist = squared_distance(project,ps);
+		double sqci = (dist - centerCord)* (dist - centerCord);
+		tangential_cost += sql / 12 + sqci;
+		centerCord += l;
+	}
+	c.tangential_cost = tangential_cost;
+}
+
+void OTR::CaculateVertexCost(Edge e, _Cost& c)
+{
+	const Point ps = source_vertex(e)->point();
+	const Point pt = target_vertex(e)->point();
+	double CostS = 0;
+	double Costt = 0;
+	for (auto pit = c.assined_points.begin(); pit != c.assined_points.end(); pit++)
+	{
+		double dists = squared_distance(*pit, ps);
+		double distt = squared_distance(*pit, pt);
+		if(dists<distt)
+		{
+			CostS += dists;
+		}
+		else
+		{
+			Costt += distt;
+		}
+	}
+	c.to_vertex_cost = CostS + Costt;
+
+}
+
+
+
+bool OTR::face_has_point(Point p, Face_handle f)
+{
+	for (int i = 0; i < 3; ++i) 
+	{
+		
+		Edge edge(f, i);
+		const Point ps = source_vertex(edge)->point();
+		const Point pt = target_vertex(edge)->point();
+		if (!compute_triangle_ccw(ps, pt, p))
+			return false;
+	}
+	return true;
+}
+
+
+
+Edge OTR::find_nearest_edge(Face_handle f, Point p)
+{
+	Edge nearest;
+	double min_dist2 = DBL_MAX;
+	for (int i = 0; i < 3; ++i)
+	{
+		Edge edge(f, i);
+		double dist2 = get_p_to_edge(p, edge);
+		if (dist2 < min_dist2) {
+			min_dist2 = dist2;
+			nearest = edge;
+		}
+	}
+
+	return nearest;
+}
+
+double OTR::get_p_to_edge(Point p, Edge e)
+{
+	const Point ps = source_vertex(e)->point();
+	const Point pt = target_vertex(e)->point();
+	Segment seg(ps, pt);
+
+	Line lst = seg.supporting_line();
+
+	double dist = squared_distance(p, lst);
+	return dist;
 }
 
 bool OTR::IsCollapsable(Edge &e)
@@ -188,7 +403,7 @@ bool OTR::IsCollapsable(Edge &e)
 
 		double cross_product = xjax * aby - xjay * abx;
 
-		if(cross_product<-DBL_MIN)		//		顺时针 todo
+		if(cross_product<-DBL_MIN)		//		顺时针
 		{
 			vertex_pair p(cviter, temp);
 			block_edge.push_back(p);

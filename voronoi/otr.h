@@ -5,7 +5,7 @@
 
 #include <CGAL/Polygon_2.h>
 #include <CGAL/Periodic_2_triangulation_2.h>
-#include <gl/GLUT.h>
+#include <GLUT.h>
 #include <iostream>
 #include <cmath>
 #include <random>
@@ -30,6 +30,21 @@ typedef CGAL::Polygon_2<K>									Polygon_2;
 typedef K::Line_2											Line;
 typedef pair<vertex_handle, vertex_handle>					vertex_pair;
 
+class _Cost
+{
+public:
+	vector<Point> assined_points;
+	double to_edge_cost;
+	double to_vertex_cost;
+	double normal_cost;
+	double tangential_cost;
+
+	double total_cost;
+
+	int assin = 0;		//分配给边或是顶点 0 边 1 顶点
+};
+
+
 class pri_queue_item
 {
 public:
@@ -38,7 +53,7 @@ public:
 
 	bool operator < (const pri_queue_item& a) const 
 	{
-		return cost > a.cost;	//最大值
+		return cost > a.cost;	//最小值
 	}
 };
 
@@ -55,15 +70,18 @@ public:
 
 	priority_queue<pri_queue_item> half_edge_queue;					//代价函数的优先队列
 
-	map<vertex_handle, vector<Point>> vertex_points_map;			//点到顶点的分配
-	map<Edge, vector<Point>> edge_points_map;					//点到边的分配
+	map<vertex_handle, _Cost> vertex_points_map;			//点到顶点的分配
+	map<Edge, _Cost> edge_points_map;					//点到边的分配
 
-	map<vertex_handle, vector<Point>> vertex_points_map_temp;			//
-	map<Edge, vector<Point>> edge_points_map_temp;					//
+	map<vertex_handle, _Cost> vertex_points_map_temp;			//
+	map<Edge, _Cost> edge_points_map_temp;					//
+
+	//map<Edge, double>	edge_cost_map;							//每条边的代价 
 
 	vector<vertex_pair> block_edge;				//
 
 	vector<Point> assin_points;					//待分配的顶点
+
 
 	OTR();
 
@@ -77,6 +95,27 @@ public:
 	void MakeCollap(Edge& e);	//合并边，合并后的结果在tgl2中
 
 	double CaculateAssinCost();		//计算当前分配方案总代价
+	double CaculateEachEdgeCost();	//计算每条边的代价
+
+	void CaculateNormalCost(Edge e, _Cost &c);	//计算法向代价
+	void CaculateTangentialCost(Edge e, _Cost& c);	//计算切向代价
+	void CaculateVertexCost(Edge e, _Cost& c);	//计算切向代价
+	void AssinToVertex(Edge e, _Cost& c);		//重新分配给顶点
+
+	bool face_has_point(Point p, Face_handle f);	//判断点p是不是在f内
+
+	Edge find_nearest_edge(Face_handle f, Point p);		//找到面f里离p最近的边
+
+	double get_p_to_edge(Point p, Edge e);			//获取p到e的距离
+
+	bool compute_triangle_ccw(Point pa,Point pb, Point pc)
+	{
+
+		auto ab = pb - pa;
+		auto bc = pc - pb;
+		double cross_product = ab.x() * bc.y() - bc.x() * ab.y();
+		return cross_product > DBL_MIN;
+	}
 
 	vertex_handle source_vertex(Edge& edge)
 	{

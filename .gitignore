@@ -339,3 +339,4 @@ ASALocalRun/
 # BeatPulse healthcheck temp database
 healthchecksdb
 voronoi/voronoi.vcxproj
+voronoi/voronoi.vcxproj

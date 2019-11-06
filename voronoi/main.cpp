@@ -13,7 +13,7 @@ void otr_extrat()
 	//CGAL::Random_points_on_circle_2<Point> point_generator(1.);
 	CGAL::Random rng(100);
 	CGAL::Random_points_in_square_2<Point> point_generator(1., rng);
-	CGAL::cpp11::copy_n(point_generator, 100, std::back_inserter(points_1));
+	CGAL::cpp11::copy_n(point_generator, 10, std::back_inserter(points_1));
 
 	for (auto iter = points_1.begin(); iter != points_1.end(); iter++)
 	{
