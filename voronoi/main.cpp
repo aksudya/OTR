@@ -10,10 +10,23 @@ void otr_extrat()
 	//std::vector<Point> points_1;
 	//std::vector<Point> points_re;
 
-	//CGAL::Random_points_on_circle_2<Point> point_generator(1.);
-	CGAL::Random rng(100);
-	CGAL::Random_points_in_square_2<Point> point_generator(1., rng);
-	CGAL::cpp11::copy_n(point_generator, 10, std::back_inserter(points_1));
+	//ifstream infile;
+
+	//infile.open("blob00.xy", ios::in);
+	//while (!infile.eof())            // 若未到文件结束一直循环
+	//{
+	//	double x, y;
+	//	infile >> x >>y;
+	//	Point p(x, y);
+	//	points_1.push_back(p);
+	//	
+	//}
+
+	CGAL::Random rng(10);
+	//CGAL::Random_points_on_circle_2<Point> point_generator(1., rng);
+	CGAL::Random_points_on_square_2<Point> point_generator(1., rng);
+	//CGAL::Random_points_in_square_2<Point> point_generator(1., rng);
+	CGAL::cpp11::copy_n(point_generator, 50, std::back_inserter(points_1));
 
 	for (auto iter = points_1.begin(); iter != points_1.end(); iter++)
 	{
@@ -190,10 +203,11 @@ void display(void)
 	glClear(GL_COLOR_BUFFER_BIT);
 	
 	//points_draw_dt(0.5);
-	//points_draw(0.5);
+	points_draw(0.5);
 	
 
 	a.InitPriQueue();
+	a.PickAndCollap();
 	lines_draw(0.5);
 	points_draw_dt(1);
 	//lines_draw(1);

@@ -33,29 +33,38 @@ void OTR::InitPriQueue()
 		//}
 		tgl2 = tgl1;
 
-		Point s1 = source_vertex(*eiter)->point();
-		Point t1 = target_vertex(*eiter)->point();
+		//Point s1 = source_vertex(*eiter)->point();
+		//Point t1 = target_vertex(*eiter)->point();
+		Edge t1_edge = *eiter;
+		Edge t2_edge=FindEdgeInTgl2(t1_edge);
 
-		Edge t2_edge;
+		//for (auto eiter2 = tgl2.finite_edges_begin(); eiter2 != tgl2.finite_edges_end(); eiter2++)
+		//{
+		//	Point s2= source_vertex(*eiter2)->point();
+		//	Point t2 = target_vertex(*eiter2)->point();
 
-		for (auto eiter2 = tgl2.finite_edges_begin(); eiter2 != tgl2.finite_edges_end(); eiter2++)
-		{
-			Point s2= source_vertex(*eiter2)->point();
-			Point t2 = target_vertex(*eiter2)->point();
+		//	if (s1.x() == s2.x() && s1.y() == s2.y() && t1.x() == t2.x() && t1.y() == t2.y())
+		//	{
+		//		double k1 = s1.x() - s2.x();
+		//		double k2 = s1.y() - s2.y();
+		//		double k3 = t1.x() - t2.x();
+		//		double k4 = t1.y() - t2.y();
 
-			if(s1.x()==s2.x()&&t1.x()==t2.x() && t1.y() == t2.y() && t1.y() == t2.y())
-			{
-				t2_edge = *eiter2;
-			}
-		}
 
+
+		//		t2_edge = *eiter2;
+		//	}
+		//}
+
+		//Edge e1 = t2_edge;
 		MakeCollap(t2_edge);
 
+		//Edge e = t2_edge;
 		double cost = CaculateAssinCost();
 		pri_queue_item pi;
-		pi.half_edge = t2_edge;
+		pi.half_edge = t1_edge;
 		pi.cost = cost;
-		half_edge_queue.push(pi);
+		half_edge_queue.push(pi);	
 		vertex_points_map_temp.clear();
 		edge_points_map_temp.clear();
 		//caculate cost
@@ -66,15 +75,16 @@ void OTR::InitPriQueue()
 
 
 		tgl2 = tgl1;
-		Edge t2_edge_twin = twin_edge(t2_edge);
+		Edge t1_edge_twin = twin_edge(t1_edge);
+		Edge t2_edge_twin= FindEdgeInTgl2(t1_edge_twin);
 		MakeCollap(t2_edge_twin);
 
 
 		double cost1 = CaculateAssinCost();
 		pri_queue_item pi1;
-		pi1.half_edge = t2_edge_twin;
-		pi1.cost = cost;
-		half_edge_queue.push(pi1);
+		pi1.half_edge = t1_edge_twin;
+		pi1.cost = cost1;
+		half_edge_queue.push(pi1);		
 		vertex_points_map_temp.clear();
 		edge_points_map_temp.clear();
 		//caculate cost
@@ -122,8 +132,59 @@ void OTR::InitPriQueue()
 		Point a = s.point(0);
 		Point b = s.point(1);*/
 	}
-	cout << kk;
+	tgl2 = tgl1;
+	cout << kk<<" ";
 	//delaunay_input = delaunay_temp;
+}
+
+
+Edge OTR::FindEdgeInTgl2(Edge e)
+{
+	Point s1 = source_vertex(e)->point();
+	Point t1 = target_vertex(e)->point();
+	Edge re;
+	for (auto eiter2 = tgl2.finite_edges_begin(); eiter2 != tgl2.finite_edges_end(); eiter2++)
+	{
+		Point s2 = source_vertex(*eiter2)->point();
+		Point t2 = target_vertex(*eiter2)->point();
+
+		if (s1.x() == s2.x() && s1.y() == s2.y() && t1.x() == t2.x() && t1.y() == t2.y())
+		{
+			re=*eiter2;
+		}
+	}
+	for (auto eiter2 = tgl2.finite_edges_begin(); eiter2 != tgl2.finite_edges_end(); eiter2++)
+	{
+		Point s2 = target_vertex(*eiter2)->point();
+		Point t2 = source_vertex(*eiter2)->point();
+
+		if (s1.x() == s2.x() && s1.y() == s2.y() && t1.x() == t2.x() && t1.y() == t2.y())
+		{
+			re = *eiter2;
+		}
+	}
+	return re;
+}
+
+
+void OTR::PickAndCollap()
+{
+	for (int i = 0; i < 45; ++i)
+	{
+		Edge fst_edge = half_edge_queue.top().half_edge;
+		cout << half_edge_queue.top().cost<<endl;
+		Edge fst_edge_tgl2 = FindEdgeInTgl2(fst_edge);
+		half_edge_queue.pop();
+		MakeCollap(fst_edge_tgl2);
+		tgl1 = tgl2;
+		while (!half_edge_queue.empty())
+		{
+			half_edge_queue.pop();
+		}
+		InitPriQueue();
+	}
+	
+	
 }
 
 void OTR::MakeCollap(Edge& e)
@@ -144,6 +205,8 @@ void OTR::MakeCollap(Edge& e)
 	isborder = false;
 }
 
+
+
 double OTR::CaculateAssinCost()
 {
 	
@@ -155,6 +218,7 @@ double OTR::CaculateAssinCost()
 			if(face_has_point(*apit,fit))
 			{
 				face_now = fit;
+				break;
 			}
 		}
 
@@ -203,10 +267,16 @@ double OTR::CaculateEachEdgeCost()
 			cost.total_cost = cost.to_vertex_cost;
 			totalcost += cost.total_cost;
 			AssinToVertex(e, cost);
-			cost.assin = 1;						//todo
+			Delete_edge.push_back(e);
 			emit->second = cost;
 		}
 	}
+	for (auto deit=Delete_edge.begin();deit!=Delete_edge.end();deit++)
+	{
+		edge_points_map_temp.erase(*deit);
+		//Edge e = *deit;
+	}
+	Delete_edge.clear();
 	return totalcost;
 }
 
@@ -246,6 +316,7 @@ void OTR::AssinToVertex(Edge e, _Cost& c)
 		}
 	}
 }
+
 
 void OTR::CaculateNormalCost(Edge e, _Cost& c)
 {
@@ -306,6 +377,10 @@ void OTR::CaculateVertexCost(Edge e, _Cost& c)
 
 bool OTR::face_has_point(Point p, Face_handle f)
 {
+	if(tgl2.is_infinite(f))
+	{
+		return true;
+	}
 	for (int i = 0; i < 3; ++i) 
 	{
 		

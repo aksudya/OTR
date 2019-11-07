@@ -10,6 +10,7 @@
 #include <cmath>
 #include <random>
 #include <ctime>
+#include <fstream> 
 
 using namespace std;
 
@@ -41,7 +42,7 @@ public:
 
 	double total_cost;
 
-	int assin = 0;		//分配给边或是顶点 0 边 1 顶点
+	//int assin = 0;		//分配给边或是顶点 0 边 1 顶点
 };
 
 
@@ -82,6 +83,7 @@ public:
 
 	vector<Point> assin_points;					//待分配的顶点
 
+	vector<Edge> Delete_edge;				//分配到顶点后从边表中删除的边
 
 	OTR();
 
@@ -93,6 +95,7 @@ public:
 	bool IsCollapsable(Edge &e);		//
 	void FlipEdge(Edge& e);
 	void MakeCollap(Edge& e);	//合并边，合并后的结果在tgl2中
+	void PickAndCollap();		//	选取队列中第一条边合并
 
 	double CaculateAssinCost();		//计算当前分配方案总代价
 	double CaculateEachEdgeCost();	//计算每条边的代价
@@ -102,9 +105,12 @@ public:
 	void CaculateVertexCost(Edge e, _Cost& c);	//计算切向代价
 	void AssinToVertex(Edge e, _Cost& c);		//重新分配给顶点
 
+	Edge FindEdgeInTgl2(Edge e);
+
 	bool face_has_point(Point p, Face_handle f);	//判断点p是不是在f内
 
 	Edge find_nearest_edge(Face_handle f, Point p);		//找到面f里离p最近的边
+
 
 	double get_p_to_edge(Point p, Edge e);			//获取p到e的距离
 
