@@ -8,6 +8,18 @@ void OTR::Init(vector<Point> input)
 {
 	points_input = input;
 	delaunay_input.insert(input.begin(), input.end());
+	bbox=bbox_2(input.begin(), input.end());
+	double dl = (std::max)((bbox.xmax() - bbox.xmin()) / 2.,
+		(bbox.ymax() - bbox.ymin()) / 2.);
+	Point p1(bbox.xmin()-dl, bbox.ymax()+dl);
+	Point p2(bbox.xmin() - dl, bbox.ymax() + dl);
+	Point p3(bbox.xmax() + dl, bbox.ymax() + dl);
+	Point p4(bbox.xmax() + dl, bbox.ymin() - dl);
+	delaunay_input.insert(p1);
+	delaunay_input.insert(p2);
+	delaunay_input.insert(p3);
+	delaunay_input.insert(p4);
+
 	tgl1 = delaunay_input;
 	isborder = false;
 	//delaunay_temp = delaunay_input;
@@ -56,40 +68,56 @@ void OTR::InitPriQueue()
 		//	}
 		//}
 
+		if (!IsBoderEdge(t2_edge))
+		{
+			MakeCollap(t2_edge);
+
+			//Edge e = t2_edge;
+
+			double cost = CaculateAssinCost();
+			pri_queue_item pi;
+			pi.half_edge = t1_edge;
+			pi.cost = cost;
+			half_edge_queue.push(pi);
+			vertex_points_map_temp.clear();
+			edge_points_map_temp.clear();
+
+			//caculate cost
+
+
+			assin_points.pop_back();
+		}
+
 		//Edge e1 = t2_edge;
-		MakeCollap(t2_edge);
-
-		//Edge e = t2_edge;
-		double cost = CaculateAssinCost();
-		pri_queue_item pi;
-		pi.half_edge = t1_edge;
-		pi.cost = cost;
-		half_edge_queue.push(pi);	
-		vertex_points_map_temp.clear();
-		edge_points_map_temp.clear();
-		//caculate cost
-
-
-		assin_points.pop_back();
+		
+		//isborder = false;
 
 
 
 		tgl2 = tgl1;
 		Edge t1_edge_twin = twin_edge(t1_edge);
-		Edge t2_edge_twin= FindEdgeInTgl2(t1_edge_twin);
-		MakeCollap(t2_edge_twin);
 
 
-		double cost1 = CaculateAssinCost();
-		pri_queue_item pi1;
-		pi1.half_edge = t1_edge_twin;
-		pi1.cost = cost1;
-		half_edge_queue.push(pi1);		
-		vertex_points_map_temp.clear();
-		edge_points_map_temp.clear();
-		//caculate cost
+		if (!IsBoderEdge(t1_edge_twin))
+		{
+			Edge t2_edge_twin = FindEdgeInTgl2(t1_edge_twin);
+			MakeCollap(t2_edge_twin);
 
-		assin_points.pop_back();
+
+			double cost1 = CaculateAssinCost();
+			pri_queue_item pi1;
+			pi1.half_edge = t1_edge_twin;
+			pi1.cost = cost1;
+			half_edge_queue.push(pi1);
+			vertex_points_map_temp.clear();
+			edge_points_map_temp.clear();
+
+			//caculate cost
+
+			assin_points.pop_back();
+			//isborder = false;
+		}
+		
 
 		//if (kk == 150)
 		//{
@@ -169,7 +197,7 @@ Edge OTR::FindEdgeInTgl2(Edge e)
 
 void OTR::PickAndCollap()
 {
-	for (int i = 0; i < 45; ++i)
+	for (int i = 0; i <20; ++i)
 	{
 		Edge fst_edge = half_edge_queue.top().half_edge;
 		cout << half_edge_queue.top().cost<<endl;
@@ -393,6 +421,39 @@ bool OTR::face_has_point(Point p, Face_handle f)
 	return true;
 }
 
+bool OTR::IsBoderEdge(Edge e)
+{
+	double dl = (std::max)((bbox.xmax() - bbox.xmin()) / 2.,
+		(bbox.ymax() - bbox.ymin()) / 2.);
+	Point* p[4];
+
+	p[0]=new Point(bbox.xmin() - dl, bbox.ymax() + dl);
+	p[1]=new Point(bbox.xmin() - dl, bbox.ymax() + dl);
+	p[2]=new Point(bbox.xmax() + dl, bbox.ymax() + dl);
+	p[3]=new Point(bbox.xmax() + dl, bbox.ymin() - dl);
+
+	Point s = source_vertex(e)->point();
+	Point t = target_vertex(e)->point();
+
+	bool match = false;
+
+	for (int i = 0; i < 4; ++i)
+	{
+		if(PointEqual(s,*p[i])||PointEqual(t,*p[i]))
+		{
+			match = true;
+			break;
+		}
+	}
+
+	return match;
+}
+
+bool OTR::PointEqual(Point a, Point b)
+{
+	return abs(a.x()- b.x())<1e-9 && abs(a.y() - b.y())<1e-9;
+}
+
 
 
 Edge OTR::find_nearest_edge(Face_handle f, Point p)
@@ -437,12 +498,12 @@ bool OTR::IsCollapsable(Edge &e)
 	{
 		auto temp = cviter;
 		temp++;
-		if(tgl2.is_infinite(cviter)||tgl2.is_infinite(temp))
-		{
-			isborder = true;
-			tgl2.remove(start_p);
-			return true;
-		}
+		//if(tgl2.is_infinite(cviter)||tgl2.is_infinite(temp))
+		//{
+			//isborder = true;
+			//tgl2.remove(start_p);
+			//return true;
+		//}
 		//if((i==start_p->degree()-1)&&temp!= tgl2.incident_vertices(start_p))
 		//{
 		//	//tgl2.remove(start_p);

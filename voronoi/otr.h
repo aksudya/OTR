@@ -5,7 +5,7 @@
 
 #include <CGAL/Polygon_2.h>
 #include <CGAL/Periodic_2_triangulation_2.h>
-#include <GLUT.h>
+#include <gl/GLUT.h>
 #include <iostream>
 #include <cmath>
 #include <random>
@@ -67,6 +67,7 @@ public:
 	Triangulation tgl1;
 	Triangulation tgl2;
 
+	CGAL::Bbox_2 bbox;			//bounding box
 	//Delaunay delaunay_temp;
 
 	priority_queue<pri_queue_item> half_edge_queue;					//代价函数的优先队列
@@ -108,6 +109,8 @@ public:
 	Edge FindEdgeInTgl2(Edge e);
 
 	bool face_has_point(Point p, Face_handle f);	//判断点p是不是在f内
+	bool IsBoderEdge(Edge e);						//判断边e是否是边缘点
+	bool PointEqual(Point a, Point b);				//判断点a与点b坐标是否相同
 
 	Edge find_nearest_edge(Face_handle f, Point p);		//找到面f里离p最近的边
 

@@ -22,7 +22,7 @@ void otr_extrat()
 	//	
 	//}
 
-	CGAL::Random rng(10);
+	CGAL::Random rng(1);
 	//CGAL::Random_points_on_circle_2<Point> point_generator(1., rng);
 	CGAL::Random_points_on_square_2<Point> point_generator(1., rng);
 	//CGAL::Random_points_in_square_2<Point> point_generator(1., rng);
