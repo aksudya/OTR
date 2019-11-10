@@ -5,7 +5,7 @@
 
 #include <CGAL/Polygon_2.h>
 #include <CGAL/Periodic_2_triangulation_2.h>
-#include <gl/GLUT.h>
+#include <GLUT.h>
 #include <iostream>
 #include <cmath>
 #include <random>
@@ -123,7 +123,7 @@ public:
 		auto ab = pb - pa;
 		auto bc = pc - pb;
 		double cross_product = ab.x() * bc.y() - bc.x() * ab.y();
-		return cross_product > DBL_MIN;
+		return cross_product >= -DBL_MIN;
 	}
 
 	vertex_handle source_vertex(Edge& edge)

@@ -11,7 +11,7 @@ void OTR::Init(vector<Point> input)
 	bbox=bbox_2(input.begin(), input.end());
 	double dl = (std::max)((bbox.xmax() - bbox.xmin()) / 2.,
 		(bbox.ymax() - bbox.ymin()) / 2.);
-	Point p1(bbox.xmin()-dl, bbox.ymax()+dl);
+	Point p1(bbox.xmin() - dl, bbox.ymin() - dl);
 	Point p2(bbox.xmin() - dl, bbox.ymax() + dl);
 	Point p3(bbox.xmax() + dl, bbox.ymax() + dl);
 	Point p4(bbox.xmax() + dl, bbox.ymin() - dl);
@@ -33,40 +33,12 @@ void OTR::InitPriQueue()
 	{
 		kk++;
 
-
-		//vertex_handle start_p = eiter->first->vertex(tgl1.cw(eiter->second));
-		//vertex_handle end_p = eiter->first->vertex(tgl1.ccw(eiter->second));
-
-		//if(kk==15)
-		//{
-		//IsCollapsable(*eiter, 0);
-		//IsCollapsable(*eiter, 1);
-			
-		//}
 		tgl2 = tgl1;
 
 		//Point s1 = source_vertex(*eiter)->point();
 		//Point t1 = target_vertex(*eiter)->point();
 		Edge t1_edge = *eiter;
 		Edge t2_edge=FindEdgeInTgl2(t1_edge);
-
-		//for (auto eiter2 = tgl2.finite_edges_begin(); eiter2 != tgl2.finite_edges_end(); eiter2++)
-		//{
-		//	Point s2= source_vertex(*eiter2)->point();
-		//	Point t2 = target_vertex(*eiter2)->point();
-
-		//	if (s1.x() == s2.x() && s1.y() == s2.y() && t1.x() == t2.x() && t1.y() == t2.y())
-		//	{
-		//		double k1 = s1.x() - s2.x();
-		//		double k2 = s1.y() - s2.y();
-		//		double k3 = t1.x() - t2.x();
-		//		double k4 = t1.y() - t2.y();
-
-
-
-		//		t2_edge = *eiter2;
-		//	}
-		//}
 
 		if (!IsBoderEdge(t2_edge))
 		{
@@ -87,10 +59,6 @@ void OTR::InitPriQueue()
 
 			assin_points.pop_back();
 		}
-
-		//Edge e1 = t2_edge;
-		
-		//isborder = false;
 
 
 
@@ -117,48 +85,7 @@ void OTR::InitPriQueue()
 			assin_points.pop_back();
 			//isborder = false;
 		}
-		
-
-		//if (kk == 150)
-		//{
-			//tgl2 = tgl1;
-			//Edge t_edge = twin_edge(*eiter);
-			//while (!IsCollapsable(t2_edge))
-			//{
-			//	FlipEdge(t2_edge);
-			//	block_edge.clear();
-			//}
-			//if (!isborder)
-			//{
-			//	Edge t_edge = twin_edge(t2_edge);
-			//	tgl2.tds().join_vertices(t_edge.first, t_edge.second);
-			//	block_edge.clear();
-			//}
-			//block_edge.clear();
-			//isborder = false;
-			//break;
-		//}
-		//
-
-
-
-		//tgl2 = tgl1;
-		//Edge t_edge = twin_edge(*eiter);
-		//while (!IsCollapsable(t_edge))
-		//{
-
-		//	FlipEdge(t_edge);
-		//	block_edge.clear();
-		//}
-
-		//tgl2.tds().join_vertices(t_edge);
-		//
-
-
-		/*Segment s = delaunay_input.segment(eiter);
-
-		Point a = s.point(0);
-		Point b = s.point(1);*/
+	
 	}
 	tgl2 = tgl1;
 	cout << kk<<" ";
@@ -188,7 +115,7 @@ Edge OTR::FindEdgeInTgl2(Edge e)
 
 		if (s1.x() == s2.x() && s1.y() == s2.y() && t1.x() == t2.x() && t1.y() == t2.y())
 		{
-			re = *eiter2;
+			re = twin_edge(*eiter2);
 		}
 	}
 	return re;
@@ -197,7 +124,7 @@ Edge OTR::FindEdgeInTgl2(Edge e)
 
 void OTR::PickAndCollap()
 {
-	for (int i = 0; i <20; ++i)
+	for (int i = 0; i <40; ++i)
 	{
 		Edge fst_edge = half_edge_queue.top().half_edge;
 		cout << half_edge_queue.top().cost<<endl;
@@ -223,14 +150,14 @@ void OTR::MakeCollap(Edge& e)
 		FlipEdge(e);
 		block_edge.clear();
 	}
-	if (!isborder)
-	{
+	//if (!isborder)
+	//{
 		Edge t_edge = twin_edge(e);
 		tgl2.tds().join_vertices(t_edge.first, t_edge.second);
 		block_edge.clear();
-	}
+	//}
 	block_edge.clear();
-	isborder = false;
+	//isborder = false;
 }
 
 
@@ -427,7 +354,7 @@ bool OTR::IsBoderEdge(Edge e)
 		(bbox.ymax() - bbox.ymin()) / 2.);
 	Point* p[4];
 
-	p[0]=new Point(bbox.xmin() - dl, bbox.ymax() + dl);
+	p[0]=new Point(bbox.xmin() - dl, bbox.ymin() - dl);
 	p[1]=new Point(bbox.xmin() - dl, bbox.ymax() + dl);
 	p[2]=new Point(bbox.xmax() + dl, bbox.ymax() + dl);
 	p[3]=new Point(bbox.xmax() + dl, bbox.ymin() - dl);
@@ -543,12 +470,6 @@ bool OTR::IsCollapsable(Edge &e)
 		{
 			vertex_pair p(cviter, temp);
 			block_edge.push_back(p);
-			//Face_handle fe;
-			//int fi;
-			//tgl1.is_edge(cviter, temp, fe, fi);
-
-			//Edge block_e(fe, fi);
-			//block_edge.push_back(block_e);
 			flag_collapsable = false;
 		}
 
@@ -624,33 +545,6 @@ void OTR::FlipEdge(Edge& e)
 		evit++;
 	}
 
-
-	/*Edge ei = *tgl2.incident_edges(source_vertex(e));
-
-	if (source_vertex(ei) != source_vertex(e))
-		ei = twin_edge(ei);        
-
-	int flag = 0;
-
-	while (flag != 2) 
-	{
-		if (target_vertex(ei) == bs)
-		{
-			flag++;
-			if (is_flippable(ei))
-				tgl2.flip(ei.first, ei.second);
-			break;
-		}
-		if (target_vertex(ei) == bt)
-		{
-			flag++;
-			if (is_flippable(ei))
-				tgl2.flip(ei.first, ei.second);
-			break;
-		}
-		Edge pre_edge = prev_edge(ei);
-		ei = twin_edge(pre_edge);
-	}*/
 }
 
 
