@@ -124,24 +124,22 @@ Edge OTR::FindEdgeInTgl2(Edge e)
 
 void OTR::PickAndCollap()
 {
-	for (int i = 0; i <30; ++i)
+	for (int i = 0; i <90; ++i)
 	{
 		Edge fst_edge = half_edge_queue.top().half_edge;
 		cout << half_edge_queue.top().cost<<endl;
 		Edge fst_edge_tgl2 = FindEdgeInTgl2(fst_edge);
 		half_edge_queue.pop();
-		
 		vertex_handle vs = source_vertex(fst_edge_tgl2);
-		
-
 		vector<vertex_handle> one_ring_s = GetOneRingVertex(vs);
-
 		MakeCollap(fst_edge_tgl2);
-
+		if (i >= 90 - 2)
+		{
+			
+			CaculateAssinCost();
+			ReLocate(one_ring_s, vs->point());
+		}
 		
-		CaculateAssinCost();
-
-		ReLocate(one_ring_s,vs->point());
 
 		
 		tgl1 = tgl2;

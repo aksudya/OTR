@@ -129,7 +129,7 @@ public:
 		auto ab = pb - pa;
 		auto bc = pc - pb;
 		double cross_product = ab.x() * bc.y() - bc.x() * ab.y();
-		return cross_product > DBL_MIN;
+		return cross_product > -DBL_MIN;
 	}
 
 	bool compute_triangle_ccw_line(Point pa, Point pb, Point pc)	//宽松
