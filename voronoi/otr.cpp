@@ -124,7 +124,7 @@ Edge OTR::FindEdgeInTgl2(Edge e)
 
 void OTR::PickAndCollap()
 {
-	for (int i = 0; i <40; ++i)
+	for (int i = 0; i <90; ++i)
 	{
 		Edge fst_edge = half_edge_queue.top().half_edge;
 		cout << half_edge_queue.top().cost<<endl;
