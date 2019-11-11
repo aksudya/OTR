@@ -124,22 +124,192 @@ Edge OTR::FindEdgeInTgl2(Edge e)
 
 void OTR::PickAndCollap()
 {
-	for (int i = 0; i <40; ++i)
+	for (int i = 0; i <30; ++i)
 	{
 		Edge fst_edge = half_edge_queue.top().half_edge;
 		cout << half_edge_queue.top().cost<<endl;
 		Edge fst_edge_tgl2 = FindEdgeInTgl2(fst_edge);
 		half_edge_queue.pop();
+		
+		vertex_handle vs = source_vertex(fst_edge_tgl2);
+		
+
+		vector<vertex_handle> one_ring_s = GetOneRingVertex(vs);
+
 		MakeCollap(fst_edge_tgl2);
+
+		
+		CaculateAssinCost();
+
+		ReLocate(one_ring_s,vs->point());
+
+		
 		tgl1 = tgl2;
 		while (!half_edge_queue.empty())
 		{
 			half_edge_queue.pop();
 		}
 		InitPriQueue();
+		cout << i << " ";
 	}
 	
 	
+}
+
+void OTR::ReLocate(vector<vertex_handle> ring,Point sp)
+{
+	int rvid = 0;
+	vector<pair<vertex_handle,Point>> toMove;
+	for (auto rvit=ring.begin();rvit!=ring.end();rvit++)
+	{
+		//todo
+		double dl = (std::max)((bbox.xmax() - bbox.xmin()) / 2.,
+			(bbox.ymax() - bbox.ymin()) / 2.);
+		Point * p[4];
+
+		p[0] = new Point(bbox.xmin() - dl, bbox.ymin() - dl);
+		p[1] = new Point(bbox.xmin() - dl, bbox.ymax() + dl);
+		p[2] = new Point(bbox.xmax() + dl, bbox.ymax() + dl);
+		p[3] = new Point(bbox.xmax() + dl, bbox.ymin() - dl);
+
+		bool isBox = false;
+		for (int i = 0; i < 4; ++i)
+		{
+			if(PointEqual((*rvit)->point(), *p[i]))
+			{
+				isBox = true;
+				break;
+			}
+		}
+		if(isBox)
+		{
+			rvid++;
+			continue;
+		}
+
+		Point AfterRelocate = Relocatev(*rvit);
+		if(PointIsInRing(ring,rvid, AfterRelocate,sp))
+		{
+			pair<vertex_handle, Point> pp(*rvit, AfterRelocate);
+			toMove.push_back(pp);
+		}
+		rvid++;
+	}
+	for (auto tmit=toMove.begin();tmit!=toMove.end();tmit++)
+	{
+		tgl2.move_if_no_collision(tmit->first, tmit->second);
+	}
+	
+}
+
+bool OTR::PointIsInRing(vector<vertex_handle> ring, int idx, Point new_point, Point sp)
+{
+	bool isIn = true;
+	for (int i = 0; i < ring.size(); ++i)
+	{
+		Point p1 = ring[i]->point();
+		if(i==idx)
+		{
+			p1 = new_point;
+		}
+		int nexti = (i + 1) % ring.size();
+		Point p2 = ring[nexti]->point();
+		if (nexti == idx)
+		{
+			p2 = new_point;
+		}
+		if(!compute_triangle_ccw_line(p1,p2,sp))
+		{
+			isIn = false;
+			break;
+		}
+	}
+	return isIn;
+}
+
+Point OTR::Relocatev(vertex_handle v)
+{
+	auto vcit=vertex_points_map_temp.find(v);
+
+	double sumVpx = 0;
+	double sumVpy = 0;
+	int sumVp=0;
+	if (vcit != vertex_points_map_temp.end())
+	{
+		_Cost v_cost = vcit->second;
+		for (auto vcpit=v_cost.assined_points.begin();vcpit!=v_cost.assined_points.end();vcpit++)
+		{
+			sumVpx += vcpit->x();
+			sumVpy += vcpit->y();
+			sumVp++;
+		}
+	}
+
+	double sumRingEx = 0;
+	double sumRingEy = 0;
+	double sumRingElow = 0;
+	auto ceiter = tgl2.incident_edges(v);
+	
+	for (int i = 0; i < v->degree(); ++i)
+	{
+		auto cemp_it = edge_points_map_temp.find(*ceiter);		//curr_edge map item
+		double bx = target_vertex(*ceiter)->point().x();
+		double by= target_vertex(*ceiter)->point().y();
+		if (cemp_it != edge_points_map_temp.end())
+		{
+			_Cost v_cost = cemp_it->second;					
+			for (auto cepit = v_cost.assined_points.begin(); cepit != v_cost.assined_points.end(); cepit++)		//当前边的上的每个点
+			{
+				double lamuda = Getlamuda(*ceiter, *cepit);
+				double pix = cepit->x();
+				double piy = cepit->y();
+				sumRingEx += (1 - lamuda) * (pix - lamuda * bx);
+				sumRingEy += (1 - lamuda) * (piy - lamuda * by);
+				sumRingElow += (1 - lamuda) * (1 - lamuda);
+			}
+		}
+
+		++ceiter;
+	}
+
+	double resx = (sumVpx + sumRingEx) / (sumVp + sumRingElow);
+	double resy = (sumVpy + sumRingEy) / (sumVp + sumRingElow);
+
+	if(sumVp+sumRingElow==0)
+	{
+		resx = v->point().x();
+		resy = v->point().y();
+	}
+
+	//todo
+	Point returnp(resx, resy);
+
+	return returnp;
+}
+
+double OTR::Getlamuda(Edge e, Point p)
+{
+	const Point ps = source_vertex(e)->point();
+	const Point pt = target_vertex(e)->point();
+	Segment seg(ps, pt);
+	Line le = seg.supporting_line();
+	Point project = le.projection(p);
+
+	double x1 = ps.x();
+	double x2 = pt.x();
+	double xp = p.x();
+	
+	if(abs(x2-x1)<0.00001)
+	{
+		x1 = ps.y();
+		x2 = pt.y();
+		xp = p.y();
+	}
+
+	double res = (xp - x1) / (x2 - x1);
+
+
+	return res;
 }
 
 void OTR::MakeCollap(Edge& e)
@@ -154,7 +324,7 @@ void OTR::MakeCollap(Edge& e)
 	//{
 		Edge t_edge = twin_edge(e);
 		tgl2.tds().join_vertices(t_edge.first, t_edge.second);
-		block_edge.clear();
+		//block_edge.clear();
 	//}
 	block_edge.clear();
 	//isborder = false;
@@ -249,7 +419,10 @@ void OTR::AssinToVertex(Edge e, _Cost& c)
 
 			if (iter != vertex_points_map_temp.end())
 			{
-				iter->second = c;
+				for (auto apit=c.assined_points.begin();apit!=c.assined_points.end();apit++)
+				{
+					iter->second.assined_points.push_back(*apit);
+				}				
 			}
 			else
 			{
@@ -262,7 +435,10 @@ void OTR::AssinToVertex(Edge e, _Cost& c)
 
 			if (iter != vertex_points_map_temp.end())
 			{
-				iter->second = c;
+				for (auto apit = c.assined_points.begin(); apit != c.assined_points.end(); apit++)
+				{
+					iter->second.assined_points.push_back(*apit);
+				}
 			}
 			else
 			{
@@ -271,6 +447,8 @@ void OTR::AssinToVertex(Edge e, _Cost& c)
 		}
 	}
 }
+
+
 
 
 void OTR::CaculateNormalCost(Edge e, _Cost& c)
@@ -398,6 +576,20 @@ Edge OTR::find_nearest_edge(Face_handle f, Point p)
 	}
 
 	return nearest;
+}
+
+vector<vertex_handle> OTR::GetOneRingVertex(vertex_handle v)
+{
+	auto cviter = tgl2.incident_vertices(v);
+	vector<vertex_handle> res;
+	for (int i = 0; i < v->degree(); ++i)
+	{
+		res.push_back(cviter);
+		++cviter;
+	}
+
+
+	return res;
 }
 
 double OTR::get_p_to_edge(Point p, Edge e)

@@ -105,15 +105,21 @@ public:
 	void CaculateTangentialCost(Edge e, _Cost& c);	//计算切向代价
 	void CaculateVertexCost(Edge e, _Cost& c);	//计算切向代价
 	void AssinToVertex(Edge e, _Cost& c);		//重新分配给顶点
+	void ReLocate(vector<vertex_handle> ring,Point sp);	//relocate sp为合并边的源点
+
+	Point Relocatev(vertex_handle v);		//relocate顶点v
+	double Getlamuda(Edge e, Point p);		//获取点P在e上投影的重心坐标lamuda
 
 	Edge FindEdgeInTgl2(Edge e);
 
+	bool PointIsInRing(vector<vertex_handle> ring, int idx,Point new_point, Point sp);		//判断点sp是否在ring内,ring的第idx被new_point 代替
 	bool face_has_point(Point p, Face_handle f);	//判断点p是不是在f内
 	bool IsBoderEdge(Edge e);						//判断边e是否是边缘点
 	bool PointEqual(Point a, Point b);				//判断点a与点b坐标是否相同
 
 	Edge find_nearest_edge(Face_handle f, Point p);		//找到面f里离p最近的边
 
+	vector<vertex_handle> GetOneRingVertex(vertex_handle v);	//获取tgl2中顶点v周围一圈的顶点
 
 	double get_p_to_edge(Point p, Edge e);			//获取p到e的距离
 
@@ -123,7 +129,16 @@ public:
 		auto ab = pb - pa;
 		auto bc = pc - pb;
 		double cross_product = ab.x() * bc.y() - bc.x() * ab.y();
-		return cross_product >= -DBL_MIN;
+		return cross_product > DBL_MIN;
+	}
+
+	bool compute_triangle_ccw_line(Point pa, Point pb, Point pc)	//宽松
+	{
+
+		auto ab = pb - pa;
+		auto bc = pc - pb;
+		double cross_product = ab.x() * bc.y() - bc.x() * ab.y();
+		return cross_product > DBL_MIN;
 	}
 
 	vertex_handle source_vertex(Edge& edge)

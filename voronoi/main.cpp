@@ -23,10 +23,10 @@ void otr_extrat()
 	//}
 
 	CGAL::Random rng(100);
-	CGAL::Random_points_on_circle_2<Point> point_generator(1., rng);
-	//CGAL::Random_points_on_square_2<Point> point_generator(1., rng);
+	//CGAL::Random_points_on_circle_2<Point> point_generator(1., rng);
+	CGAL::Random_points_on_square_2<Point> point_generator(1., rng);
 	//CGAL::Random_points_in_square_2<Point> point_generator(1., rng);
-	CGAL::cpp11::copy_n(point_generator, 50, std::back_inserter(points_1));
+	CGAL::cpp11::copy_n(point_generator, 100, std::back_inserter(points_1));
 
 	for (auto iter = points_1.begin(); iter != points_1.end(); iter++)
 	{
@@ -187,7 +187,7 @@ void points_draw(double t)
 	glPushMatrix();
 	std::vector <Point>::iterator iter;
 	glColor3f(0.0, 1.0, t);
-	glPointSize(2);
+	glPointSize(3);
 	glBegin(GL_POINTS);
 	for (iter = points_re.begin(); iter != points_re.end(); iter++)
 		glVertex2f(iter->hx(), iter->hy());
