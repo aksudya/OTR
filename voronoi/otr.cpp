@@ -124,7 +124,7 @@ Edge OTR::FindEdgeInTgl2(Edge e)
 
 void OTR::PickAndCollap()
 {
-	for (int i = 0; i <90; ++i)
+	for (int i = 0; i <20; ++i)
 	{
 		Edge fst_edge = half_edge_queue.top().half_edge;
 		cout << half_edge_queue.top().cost<<endl;
@@ -133,12 +133,12 @@ void OTR::PickAndCollap()
 		vertex_handle vs = source_vertex(fst_edge_tgl2);
 		vector<vertex_handle> one_ring_s = GetOneRingVertex(vs);
 		MakeCollap(fst_edge_tgl2);
-		if (i >= 90 - 2)
-		{
+		//if (i >= 90 - 1)
+		//{
 			
 			CaculateAssinCost();
 			ReLocate(one_ring_s, vs->point());
-		}
+		//}
 		
 
 		
@@ -195,7 +195,10 @@ void OTR::ReLocate(vector<vertex_handle> ring,Point sp)
 	}
 	for (auto tmit=toMove.begin();tmit!=toMove.end();tmit++)
 	{
-		tgl2.move_if_no_collision(tmit->first, tmit->second);
+		vertex_handle vm = tmit->first;
+		vm->point() = tmit->second;
+
+		//tgl2.move_if_no_collision(tmit->first, tmit->second);
 	}
 	
 }
@@ -350,9 +353,9 @@ double OTR::CaculateAssinCost()
 
 		if (iter != edge_points_map_temp.end())
 		{
-			_Cost cost = iter->second;
-			cost.assined_points.push_back(*apit);
-			iter->second = cost;
+			//_Cost cost = iter->second;
+			iter->second.assined_points.push_back(*apit);
+			//iter->second = cost;
 		}	
 		else
 		{
@@ -417,14 +420,17 @@ void OTR::AssinToVertex(Edge e, _Cost& c)
 
 			if (iter != vertex_points_map_temp.end())
 			{
-				for (auto apit=c.assined_points.begin();apit!=c.assined_points.end();apit++)
-				{
-					iter->second.assined_points.push_back(*apit);
-				}				
+				//for (auto apit=c.assined_points.begin();apit!=c.assined_points.end();apit++)
+				//{
+					iter->second.assined_points.push_back(*pit);
+				//}				
 			}
 			else
 			{
-				vertex_points_map_temp.insert(pair<vertex_handle, _Cost>(source_vertex(e), c));
+				_Cost cost;
+				cost.assined_points.push_back(*pit);
+				vertex_points_map_temp.insert(pair<vertex_handle, _Cost>(source_vertex(e), cost));
+				//vertex_points_map_temp.insert(pair<vertex_handle, _Cost>(source_vertex(e), c));
 			}
 		}
 		else
@@ -433,14 +439,17 @@ void OTR::AssinToVertex(Edge e, _Cost& c)
 
 			if (iter != vertex_points_map_temp.end())
 			{
-				for (auto apit = c.assined_points.begin(); apit != c.assined_points.end(); apit++)
-				{
-					iter->second.assined_points.push_back(*apit);
-				}
+				//for (auto apit = c.assined_points.begin(); apit != c.assined_points.end(); apit++)
+				//{
+					iter->second.assined_points.push_back(*pit);
+				//}
 			}
 			else
 			{
-				vertex_points_map_temp.insert(pair<vertex_handle, _Cost>(target_vertex(e), c));
+				_Cost cost;
+				cost.assined_points.push_back(*pit);
+				vertex_points_map_temp.insert(pair<vertex_handle, _Cost>(target_vertex(e), cost));
+				//vertex_points_map_temp.insert(pair<vertex_handle, _Cost>(target_vertex(e), c));
 			}
 		}
 	}
@@ -454,7 +463,7 @@ void OTR::CaculateNormalCost(Edge e, _Cost& c)
 	double normal_cost = 0;
 	for (auto pit=c.assined_points.begin();pit!=c.assined_points.end();pit++)
 	{
-		normal_cost += get_p_to_edge(*pit, e);
+		normal_cost += get_p_to_edge(*pit, e)* get_p_to_edge(*pit, e);
 	}
 	c.normal_cost = normal_cost;
 }
@@ -465,7 +474,7 @@ void OTR::CaculateTangentialCost(Edge e, _Cost& c)
 	double centerCord;		//每段中点的坐标
 	const Point ps = source_vertex(e)->point();
 	const Point pt = target_vertex(e)->point();
-	double l = squared_distance(ps, pt)/c.assined_points.size();	//每段的长度
+	double l = sqrt( squared_distance(ps, pt))/c.assined_points.size();	//每段的长度
 	double sql = l * l;
 	centerCord = l / 2;
 	for (auto pit = c.assined_points.begin(); pit != c.assined_points.end(); pit++)
@@ -473,7 +482,7 @@ void OTR::CaculateTangentialCost(Edge e, _Cost& c)
 		Segment seg(ps, pt);
 		Line le = seg.supporting_line();
 		Point project = le.projection(*pit);
-		double dist = squared_distance(project,ps);
+		double dist = sqrt( squared_distance(project,ps));
 		double sqci = (dist - centerCord)* (dist - centerCord);
 		tangential_cost += sql / 12 + sqci;
 		centerCord += l;
@@ -598,7 +607,7 @@ double OTR::get_p_to_edge(Point p, Edge e)
 
 	Line lst = seg.supporting_line();
 
-	double dist = squared_distance(p, lst);
+	double dist =sqrt( squared_distance(p, lst));
 	return dist;
 }
 
@@ -692,7 +701,7 @@ void OTR::FlipEdge(Edge& e)
 			ints_point = boost::get<Point>(&*result);		//获取距交点长度
 		}
 		
-		double dist = squared_distance(*ints_point, target_vertex(e)->point());
+		double dist = sqrt(squared_distance(*ints_point, target_vertex(e)->point()));
 
 		if (dist > max_dist)
 		{
