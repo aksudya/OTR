@@ -10,7 +10,7 @@ void otr_extrat()
 	//std::vector<Point> points_1;
 	//std::vector<Point> points_re;
 
-	//ifstream infile;
+	ifstream infile;
 
 	//infile.open("blob00.xy", ios::in);
 	//while (!infile.eof())            // 若未到文件结束一直循环
@@ -25,7 +25,7 @@ void otr_extrat()
 	CGAL::Random rng(100);
 	//CGAL::Random_points_on_circle_2<Point> point_generator(1., rng);
 	CGAL::Random_points_on_square_2<Point> point_generator(1., rng);
-	//CGAL::Random_points_in_square_2<Point> point_generator(1., rng);
+	////CGAL::Random_points_in_square_2<Point> point_generator(1., rng);
 	CGAL::cpp11::copy_n(point_generator, 100, std::back_inserter(points_1));
 
 	for (auto iter = points_1.begin(); iter != points_1.end(); iter++)
@@ -216,6 +216,21 @@ void display(void)
 	//points_triangulation();
 }
 
+void keybordClick(unsigned char key, int x, int y)
+{
+	if (key == 's')
+	{
+		glClear(GL_COLOR_BUFFER_BIT);
+		glPushMatrix();
+		a.PickAndCollap();
+		points_draw(0.5);
+		lines_draw(0.5);
+		points_draw_dt(1);
+		glPopMatrix();
+		glutSwapBuffers();
+	}
+}
+
 void init(void)
 {
 	glClearColor(0.0, 0.0, 0.0, 0);
@@ -247,7 +262,7 @@ int main(int argc, char** argv)
 	init();
 	glutDisplayFunc(display);
 	glutReshapeFunc(reshape);
-	//glutKeyboardFunc(keybordClick);
+	glutKeyboardFunc(keybordClick);
 	glutMainLoop();
 	return 0;
 }

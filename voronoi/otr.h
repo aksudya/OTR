@@ -5,7 +5,7 @@
 
 #include <CGAL/Polygon_2.h>
 #include <CGAL/Periodic_2_triangulation_2.h>
-#include <gl/GLUT.h>
+#include <GLUT.h>
 #include <iostream>
 #include <cmath>
 #include <random>
@@ -112,9 +112,10 @@ public:
 
 	Edge FindEdgeInTgl2(Edge e);
 
-	bool PointIsInRing(vector<vertex_handle> ring, int idx,Point new_point, Point sp);		//判断点sp是否在ring内,ring的第idx被new_point 代替
+	bool PointIsInRing(vector<vertex_handle> ring, Point sp);		//判断点sp是否在ring内
 	bool face_has_point(Point p, Face_handle f);	//判断点p是不是在f内
 	bool IsBoderEdge(Edge e);						//判断边e是否是边缘点
+	bool IsBoderPoint(Point p);						//判断点p是否是边缘点
 	bool PointEqual(Point a, Point b);				//判断点a与点b坐标是否相同
 
 	Edge find_nearest_edge(Face_handle f, Point p);		//找到面f里离p最近的边

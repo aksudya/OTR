@@ -124,8 +124,8 @@ Edge OTR::FindEdgeInTgl2(Edge e)
 
 void OTR::PickAndCollap()
 {
-	for (int i = 0; i <20; ++i)
-	{
+	//for (int i = 0; i <80; ++i)
+	//{
 		Edge fst_edge = half_edge_queue.top().half_edge;
 		cout << half_edge_queue.top().cost<<endl;
 		Edge fst_edge_tgl2 = FindEdgeInTgl2(fst_edge);
@@ -133,7 +133,7 @@ void OTR::PickAndCollap()
 		vertex_handle vs = source_vertex(fst_edge_tgl2);
 		vector<vertex_handle> one_ring_s = GetOneRingVertex(vs);
 		MakeCollap(fst_edge_tgl2);
-		//if (i >= 90 - 1)
+		//if (i >= 35 - 17)
 		//{
 			
 			CaculateAssinCost();
@@ -141,15 +141,17 @@ void OTR::PickAndCollap()
 		//}
 		
 
-		
+		vertex_points_map_temp.clear();
+		edge_points_map_temp.clear();
+
 		tgl1 = tgl2;
 		while (!half_edge_queue.empty())
 		{
 			half_edge_queue.pop();
 		}
 		InitPriQueue();
-		cout << i << " ";
-	}
+		//cout << i << " ";
+	//}
 	
 	
 }
@@ -186,39 +188,34 @@ void OTR::ReLocate(vector<vertex_handle> ring,Point sp)
 		}
 
 		Point AfterRelocate = Relocatev(*rvit);
-		if(PointIsInRing(ring,rvid, AfterRelocate,sp))
+		vector<vertex_handle> one_ring_v = GetOneRingVertex(*rvit);
+		if(PointIsInRing(one_ring_v, AfterRelocate))
 		{
-			pair<vertex_handle, Point> pp(*rvit, AfterRelocate);
-			toMove.push_back(pp);
+			(*rvit)->point() = AfterRelocate;
+			//pair<vertex_handle, Point> pp(*rvit, AfterRelocate);
+			//toMove.push_back(pp);
 		}
 		rvid++;
 	}
-	for (auto tmit=toMove.begin();tmit!=toMove.end();tmit++)
-	{
-		vertex_handle vm = tmit->first;
-		vm->point() = tmit->second;
+	//for (auto tmit=toMove.begin();tmit!=toMove.end();tmit++)
+	//{
+	//	vertex_handle vm = tmit->first;
+	//	vm->point() = tmit->second;
 
-		//tgl2.move_if_no_collision(tmit->first, tmit->second);
-	}
+	//	//tgl2.move_if_no_collision(tmit->first, tmit->second);
+	//}
 	
 }
 
-bool OTR::PointIsInRing(vector<vertex_handle> ring, int idx, Point new_point, Point sp)
+bool OTR::PointIsInRing(vector<vertex_handle> ring, Point sp)
 {
 	bool isIn = true;
 	for (int i = 0; i < ring.size(); ++i)
 	{
 		Point p1 = ring[i]->point();
-		if(i==idx)
-		{
-			p1 = new_point;
-		}
+		
 		int nexti = (i + 1) % ring.size();
 		Point p2 = ring[nexti]->point();
-		if (nexti == idx)
-		{
-			p2 = new_point;
-		}
 		if(!compute_triangle_ccw_line(p1,p2,sp))
 		{
 			isIn = false;
@@ -378,11 +375,12 @@ double OTR::CaculateEachEdgeCost()
 	{
 		Edge e = emit->first;
 		_Cost cost = emit->second;
+
 		CaculateNormalCost(e, cost);
 		CaculateTangentialCost(e, cost);
 		cost.to_edge_cost = cost.normal_cost + cost.tangential_cost;
 		CaculateVertexCost(e, cost);
-		if(cost.to_edge_cost<cost.to_vertex_cost)		//分配给边
+		if(cost.to_edge_cost<cost.to_vertex_cost && !IsBoderEdge(e))		//分配给边
 		{
 			cost.total_cost = cost.to_edge_cost;
 			totalcost += cost.total_cost;
@@ -394,7 +392,7 @@ double OTR::CaculateEachEdgeCost()
 			totalcost += cost.total_cost;
 			AssinToVertex(e, cost);
 			Delete_edge.push_back(e);
-			emit->second = cost;
+			//emit->second = cost;
 		}
 	}
 	for (auto deit=Delete_edge.begin();deit!=Delete_edge.end();deit++)
@@ -414,6 +412,45 @@ void OTR::AssinToVertex(Edge e, _Cost& c)
 	{
 		double dists = squared_distance(*pit, ps);
 		double distt = squared_distance(*pit, pt);
+
+		if (IsBoderPoint(ps))
+		{
+			auto iter = vertex_points_map_temp.find(target_vertex(e));
+
+			if (iter != vertex_points_map_temp.end())
+			{
+				iter->second.assined_points.push_back(*pit);
+			}
+			else
+			{
+				_Cost cost;
+				cost.assined_points.push_back(*pit);
+				vertex_points_map_temp.insert(pair<vertex_handle, _Cost>(target_vertex(e), cost));
+				//vertex_points_map_temp.insert(pair<vertex_handle, _Cost>(target_vertex(e), c));
+			}
+			continue;
+		}
+		else if (IsBoderPoint(pt))
+		{
+			auto iter = vertex_points_map_temp.find(source_vertex(e));
+
+			if (iter != vertex_points_map_temp.end())
+			{
+				//for (auto apit=c.assined_points.begin();apit!=c.assined_points.end();apit++)
+				//{
+				iter->second.assined_points.push_back(*pit);
+				//}				
+			}
+			else
+			{
+				_Cost cost;
+				cost.assined_points.push_back(*pit);
+				vertex_points_map_temp.insert(pair<vertex_handle, _Cost>(source_vertex(e), cost));
+				//vertex_points_map_temp.insert(pair<vertex_handle, _Cost>(source_vertex(e), c));
+			}
+			continue;
+		}
+
 		if (dists < distt)	//分配给s
 		{
 			auto iter = vertex_points_map_temp.find(source_vertex(e));
@@ -500,6 +537,18 @@ void OTR::CaculateVertexCost(Edge e, _Cost& c)
 	{
 		double dists = squared_distance(*pit, ps);
 		double distt = squared_distance(*pit, pt);
+
+		if(IsBoderPoint(ps))
+		{
+			Costt += distt;
+			continue;
+		}
+		else if(IsBoderPoint(pt))
+		{
+			CostS += dists;
+			continue;
+		}
+
 		if(dists<distt)
 		{
 			CostS += dists;
@@ -561,6 +610,29 @@ bool OTR::IsBoderEdge(Edge e)
 	return match;
 }
 
+bool OTR::IsBoderPoint(Point point)
+{
+	double dl = (std::max)((bbox.xmax() - bbox.xmin()) / 2.,
+		(bbox.ymax() - bbox.ymin()) / 2.);
+	Point * p[4];
+
+	p[0] = new Point(bbox.xmin() - dl, bbox.ymin() - dl);
+	p[1] = new Point(bbox.xmin() - dl, bbox.ymax() + dl);
+	p[2] = new Point(bbox.xmax() + dl, bbox.ymax() + dl);
+	p[3] = new Point(bbox.xmax() + dl, bbox.ymin() - dl);
+
+	bool isBox = false;
+	for (int i = 0; i < 4; ++i)
+	{
+		if (PointEqual(point, *p[i]))
+		{
+			isBox = true;
+			break;
+		}
+	}
+	return isBox;
+}
+
 bool OTR::PointEqual(Point a, Point b)
 {
 	return abs(a.x()- b.x())<1e-9 && abs(a.y() - b.y())<1e-9;
@@ -570,8 +642,8 @@ bool OTR::PointEqual(Point a, Point b)
 
 Edge OTR::find_nearest_edge(Face_handle f, Point p)
 {
-	Edge nearest;
-	double min_dist2 = DBL_MAX;
+	Edge nearest(f, 0);
+	double min_dist2 =-DBL_MAX;
 	for (int i = 0; i < 3; ++i)
 	{
 		Edge edge(f, i);
@@ -684,7 +756,7 @@ void OTR::FlipEdge(Edge& e)
 {
 	Segment st(source_vertex(e)->point(), target_vertex(e)->point());
 
-	double max_dist = DBL_MIN;
+	double max_dist = -1;
 	vertex_pair blocked_edge;
 	for (auto bit=block_edge.begin();bit!=block_edge.end();bit++)
 	{
@@ -778,6 +850,6 @@ bool OTR::is_flippable(Edge& edge)
 	double cross_product = atx* tcy - aty * tcx;
 	
 
-	return cross_product>DBL_MIN;
+	return cross_product>-DBL_MIN;
 
 }
