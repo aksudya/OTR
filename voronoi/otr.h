@@ -5,7 +5,7 @@
 
 #include <CGAL/Polygon_2.h>
 #include <CGAL/Periodic_2_triangulation_2.h>
-#include <GLUT.h>
+#include <gl/GLUT.h>
 #include <iostream>
 #include <cmath>
 #include <random>
@@ -35,12 +35,12 @@ class _Cost
 {
 public:
 	vector<Point> assined_points;
-	double to_edge_cost;
-	double to_vertex_cost;
-	double normal_cost;
-	double tangential_cost;
+	double to_edge_cost=0;
+	double to_vertex_cost=0;
+	double normal_cost=0;
+	double tangential_cost=0;
 
-	double total_cost;
+	double total_cost=0;
 
 	//int assin = 0;		//分配给边或是顶点 0 边 1 顶点
 };
@@ -69,6 +69,7 @@ public:
 
 	CGAL::Bbox_2 bbox;			//bounding box
 	//Delaunay delaunay_temp;
+	double pri_cost;		//	上一次的代价
 
 	priority_queue<pri_queue_item> half_edge_queue;					//代价函数的优先队列
 
@@ -85,6 +86,7 @@ public:
 	vector<Point> assin_points;					//待分配的顶点
 
 	vector<Edge> Delete_edge;				//分配到顶点后从边表中删除的边
+
 
 	OTR();
 

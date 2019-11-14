@@ -22,6 +22,8 @@ void OTR::Init(vector<Point> input)
 
 	tgl1 = delaunay_input;
 	isborder = false;
+
+	pri_cost = 0;
 	//delaunay_temp = delaunay_input;
 }
 
@@ -49,7 +51,7 @@ void OTR::InitPriQueue()
 			double cost = CaculateAssinCost();
 			pri_queue_item pi;
 			pi.half_edge = t1_edge;
-			pi.cost = cost;
+			pi.cost = cost-pri_cost;
 			half_edge_queue.push(pi);
 			vertex_points_map_temp.clear();
 			edge_points_map_temp.clear();
@@ -75,7 +77,7 @@ void OTR::InitPriQueue()
 			double cost1 = CaculateAssinCost();
 			pri_queue_item pi1;
 			pi1.half_edge = t1_edge_twin;
-			pi1.cost = cost1;
+			pi1.cost = cost1- pri_cost;
 			half_edge_queue.push(pi1);
 			vertex_points_map_temp.clear();
 			edge_points_map_temp.clear();
@@ -128,6 +130,7 @@ void OTR::PickAndCollap()
 	//{
 		Edge fst_edge = half_edge_queue.top().half_edge;
 		cout << half_edge_queue.top().cost<<endl;
+		//pri_cost = half_edge_queue.top().cost;
 		Edge fst_edge_tgl2 = FindEdgeInTgl2(fst_edge);
 		half_edge_queue.pop();
 		vertex_handle vs = source_vertex(fst_edge_tgl2);
@@ -139,6 +142,10 @@ void OTR::PickAndCollap()
 			CaculateAssinCost();
 			ReLocate(one_ring_s, vs->point());
 		//}
+			vertex_points_map_temp.clear();
+			edge_points_map_temp.clear();
+
+			pri_cost=CaculateAssinCost();
 		
 
 		vertex_points_map_temp.clear();
@@ -213,8 +220,7 @@ bool OTR::PointIsInRing(vector<vertex_handle> ring, Point sp)
 	for (int i = 0; i < ring.size(); ++i)
 	{
 		Point p1 = ring[i]->point();
-		
-		int nexti = (i + 1) % ring.size();
+		int nexti = (i + 1) % (int)ring.size();
 		Point p2 = ring[nexti]->point();
 		if(!compute_triangle_ccw_line(p1,p2,sp))
 		{
@@ -266,6 +272,25 @@ Point OTR::Relocatev(vertex_handle v)
 				sumRingElow += (1 - lamuda) * (1 - lamuda);
 			}
 		}
+
+		Edge ceitwin = twin_edge(*ceiter);
+		auto cemp_it1 = edge_points_map_temp.find(ceitwin);		//curr_edge map item
+		double bx1 = target_vertex(ceitwin)->point().x();
+		double by1 = target_vertex(ceitwin)->point().y();
+		if (cemp_it1 != edge_points_map_temp.end())
+		{
+			_Cost v_cost = cemp_it1->second;
+			for (auto cepit = v_cost.assined_points.begin(); cepit != v_cost.assined_points.end(); cepit++)		//当前边的上的每个点
+			{
+				double lamuda = Getlamuda(ceitwin, *cepit);
+				double pix = cepit->x();
+				double piy = cepit->y();
+				sumRingEx += (1 - lamuda) * (pix - lamuda * bx1);
+				sumRingEy += (1 - lamuda) * (piy - lamuda * by1);
+				sumRingElow += (1 - lamuda) * (1 - lamuda);
+			}
+		}
+
 
 		++ceiter;
 	}
@@ -346,7 +371,12 @@ double OTR::CaculateAssinCost()
 		}
 
 		Edge nearest_edge = find_nearest_edge(face_now, *apit);
+		Edge twinn = twin_edge(nearest_edge);
 		auto iter = edge_points_map_temp.find(nearest_edge);
+		auto itert= edge_points_map_temp.find(twinn);
+
+
+
 
 		if (iter != edge_points_map_temp.end())
 		{
@@ -356,9 +386,17 @@ double OTR::CaculateAssinCost()
 		}	
 		else
 		{
-			_Cost cost;
-			cost.assined_points.push_back(*apit);
-			edge_points_map_temp.insert(pair<Edge, _Cost>(nearest_edge,cost));
+			if(itert!=edge_points_map_temp.end())
+			{
+				itert->second.assined_points.push_back(*apit);
+			}
+			else
+			{
+				_Cost cost;
+				cost.assined_points.push_back(*apit);
+				edge_points_map_temp.insert(pair<Edge, _Cost>(nearest_edge,cost));
+			}
+			
 		}
 	}
 
@@ -375,10 +413,10 @@ double OTR::CaculateEachEdgeCost()
 	{
 		Edge e = emit->first;
 		_Cost cost = emit->second;
-
 		CaculateNormalCost(e, cost);
+
 		CaculateTangentialCost(e, cost);
-		cost.to_edge_cost = cost.normal_cost + cost.tangential_cost;
+		cost.to_edge_cost = cost.normal_cost + cost.tangential_cost;//todo
 		CaculateVertexCost(e, cost);
 		if(cost.to_edge_cost<cost.to_vertex_cost && !IsBoderEdge(e))		//分配给边
 		{
@@ -505,14 +543,20 @@ void OTR::CaculateNormalCost(Edge e, _Cost& c)
 	c.normal_cost = normal_cost;
 }
 
+
 void OTR::CaculateTangentialCost(Edge e, _Cost& c)
 {
 	double tangential_cost = 0;
 	double centerCord;		//每段中点的坐标
 	const Point ps = source_vertex(e)->point();
 	const Point pt = target_vertex(e)->point();
-	double l = sqrt( squared_distance(ps, pt))/c.assined_points.size();	//每段的长度
-	double sql = l * l;
+	
+	
+	//todo
+	//todo
+
+	double l = sqrt( squared_distance(ps, pt))/assin_points.size();	//每段的长度
+	double sql =l*l;
 	centerCord = l / 2;
 	for (auto pit = c.assined_points.begin(); pit != c.assined_points.end(); pit++)
 	{
@@ -643,7 +687,7 @@ bool OTR::PointEqual(Point a, Point b)
 Edge OTR::find_nearest_edge(Face_handle f, Point p)
 {
 	Edge nearest(f, 0);
-	double min_dist2 =-DBL_MAX;
+	double min_dist2 =DBL_MAX;
 	for (int i = 0; i < 3; ++i)
 	{
 		Edge edge(f, i);
@@ -756,7 +800,7 @@ void OTR::FlipEdge(Edge& e)
 {
 	Segment st(source_vertex(e)->point(), target_vertex(e)->point());
 
-	double max_dist = -1;
+	double max_dist = -DBL_MIN;
 	vertex_pair blocked_edge;
 	for (auto bit=block_edge.begin();bit!=block_edge.end();bit++)
 	{
