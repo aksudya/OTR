@@ -5,7 +5,7 @@
 
 #include <CGAL/Polygon_2.h>
 #include <CGAL/Periodic_2_triangulation_2.h>
-#include <gl/GLUT.h>
+#include <GLUT.h>
 #include <iostream>
 #include <cmath>
 #include <random>
@@ -71,6 +71,8 @@ public:
 	//Delaunay delaunay_temp;
 	double pri_cost;		//	上一次的代价
 
+	int iter_times;
+
 	priority_queue<pri_queue_item> half_edge_queue;					//代价函数的优先队列
 
 	map<vertex_handle, _Cost> vertex_points_map;			//点到顶点的分配
@@ -102,6 +104,7 @@ public:
 
 	double CaculateAssinCost();		//计算当前分配方案总代价
 	double CaculateEachEdgeCost();	//计算每条边的代价
+	double PointProjectToSource(Edge e, Point p);	//计算点p在e上的投影到e原点的距离
 
 	void CaculateNormalCost(Edge e, _Cost &c);	//计算法向代价
 	void CaculateTangentialCost(Edge e, _Cost& c);	//计算切向代价

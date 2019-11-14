@@ -10,7 +10,7 @@ void otr_extrat()
 	//std::vector<Point> points_1;
 	//std::vector<Point> points_re;
 
-	//ifstream infile;
+	ifstream infile;
 
 	//infile.open("blob00.xy", ios::in);
 	//while (!infile.eof())            // 若未到文件结束一直循环
@@ -22,10 +22,10 @@ void otr_extrat()
 	//	
 	//}
 
-	CGAL::Random rng(10);
+	CGAL::Random rng(100);
 	//CGAL::Random_points_on_circle_2<Point> point_generator(1., rng);
 	CGAL::Random_points_on_square_2<Point> point_generator(1., rng);
-	////CGAL::Random_points_in_square_2<Point> point_generator(1., rng);
+	//CGAL::Random_points_in_square_2<Point> point_generator(1., rng);
 	CGAL::cpp11::copy_n(point_generator, 100, std::back_inserter(points_1));
 
 	for (auto iter = points_1.begin(); iter != points_1.end(); iter++)
@@ -156,6 +156,8 @@ void lines_draw(double t)
 		//glEnd();
 
 	}
+
+
 	glEnd();
 	glPopMatrix();
 }
@@ -196,6 +198,30 @@ void points_draw(double t)
 	//glutSwapBuffers();
 }
 
+void assin_draw()
+{
+	glPushMatrix();
+	//std::vector <Point>::iterator iter;
+	glColor3f(0.2, 0.6, 0.1);
+	glPointSize(5);
+	glBegin(GL_POINTS);
+
+	for (auto iter=a.vertex_points_map.begin();iter!=a.vertex_points_map.end();iter++)
+	{
+		_Cost cost = iter->second;
+		for (auto pit=cost.assined_points.begin();pit!=cost.assined_points.end();pit++)
+		{
+			glVertex2f(pit->x(),pit->y());
+		}
+		
+	}
+
+	//for (iter = points_re.begin(); iter != points_re.end(); iter++)
+		//glVertex2f(iter->hx(), iter->hy());
+	glEnd();
+	glPopMatrix();
+}
+
 void display(void)
 {
 	//glClear(GL_COLOR_BUFFER_BIT);
@@ -226,6 +252,7 @@ void keybordClick(unsigned char key, int x, int y)
 		points_draw(0.5);
 		lines_draw(0.5);
 		points_draw_dt(1);
+		assin_draw();
 		glPopMatrix();
 		glutSwapBuffers();
 	}
