@@ -12,21 +12,21 @@ void otr_extrat()
 
 	ifstream infile;
 
-	//infile.open("blob00.xy", ios::in);
-	//while (!infile.eof())            // 若未到文件结束一直循环
+	//infile.open("bob11.xy", ios::in);
+	//while (!infile.eof())           
 	//{
 	//	double x, y;
 	//	infile >> x >>y;
 	//	Point p(x, y);
 	//	points_1.push_back(p);
 	//	
-	//}
+	//}											//读入xy文件
 
 	CGAL::Random rng(100);
-	//CGAL::Random_points_on_circle_2<Point> point_generator(1., rng);
-	CGAL::Random_points_on_square_2<Point> point_generator(1., rng);
-	//CGAL::Random_points_in_square_2<Point> point_generator(1., rng);
-	CGAL::cpp11::copy_n(point_generator, 100, std::back_inserter(points_1));
+	//CGAL::Random_points_on_circle_2<Point> point_generator(1., rng);		//圆上
+	CGAL::Random_points_on_square_2<Point> point_generator(1., rng);			//正方形上
+	////CGAL::Random_points_in_square_2<Point> point_generator(1., rng);		//正方形内
+	CGAL::cpp11::copy_n(point_generator, 100, std::back_inserter(points_1));	//100为生成点的个数
 
 	for (auto iter = points_1.begin(); iter != points_1.end(); iter++)
 	{
@@ -39,10 +39,9 @@ void otr_extrat()
 	//OTR a;
 	a.Init(points_re);
 	
-	//a.InitPriQueue();
 }
 
-void lines_draw(double t)
+void lines_draw(double t)	//画tgl2中的线
 {
 
 	//glClear(GL_COLOR_BUFFER_BIT);
@@ -68,35 +67,6 @@ void lines_draw(double t)
 	}
 	glEnd();
 
-	//glColor3f(0.0, 1.0, 1.0);
-	//glBegin(GL_LINES);
-
-	//for (auto eit = a.tgl1.edges_begin(); eit != a.tgl1.edges_end(); eit++)
-	//{
-	//	kk++;
-
-	//	vertex_handle start_p = eit->first->vertex(a.tgl1.ccw(eit->second));
-	//	vertex_handle end_p = eit->first->vertex(a.tgl1.cw(eit->second));
-
-	//	if (kk == 15)
-	//	{
-	//		auto cviter = a.tgl1.incident_vertices(start_p);
-
-	//		for (int i = 0; i < start_p->degree(); ++i)
-	//		{
-	//			Point aa = cviter->point();
-	//			auto temp = cviter;
-	//			temp++;
-	//			Point bb = temp->point();
-	//			glVertex2f(aa.x(), aa.y());
-	//			glVertex2f(bb.x(), bb.y());
-	//			cviter++;
-	//		}
-	//	}
-
-	//}
-
-	//glEnd();
 
 	glColor3f(1, 1, 1);
 	glBegin(GL_LINES);
@@ -124,33 +94,6 @@ void lines_draw(double t)
 	{
 
 
-		//vertex_handle start_p = eit->first->vertex(a.tgl1.ccw(eit->second));
-		//vertex_handle end_p = eit->first->vertex(a.tgl1.cw(eit->second));
-
-		//if (kk == 1)
-		//{
-		//	auto cviter = a.tgl1.incident_vertices(start_p);
-
-		//	for (int i = 0; i < start_p->degree(); ++i)
-		//	{
-		//		Point aa = cviter->point();
-		//		auto temp = cviter;
-		//		temp++;
-		//		Point bb = temp->point();
-		//		glVertex2f(aa.x(), aa.y());
-		//		glVertex2f(bb.x(), bb.y());
-		//		cviter++;
-		//	}
-		//}
-
-
-
-
-		//Segment s = a.tgl1.segment(*eit);
-
-		//Point a = s.point(0);
-		//Point b = s.point(1);
-
 		glVertex2f(eit->first->point().x(), eit->first->point().y());
 		glVertex2f(eit->second->point().x(), eit->second->point().y());
 		//glEnd();
@@ -162,7 +105,7 @@ void lines_draw(double t)
 	glPopMatrix();
 }
 
-void points_draw_dt(double t)
+void points_draw_dt(double t)	//绘制三角网格上的点(tgl2)
 {
 	//glClear(GL_COLOR_BUFFER_BIT);
 	glPushMatrix();
@@ -183,7 +126,7 @@ void points_draw_dt(double t)
 	//glutSwapBuffers();
 }
 
-void points_draw(double t)
+void points_draw(double t)	//绘制生成的原始点
 {
 	//glClear(GL_COLOR_BUFFER_BIT);
 	glPushMatrix();
@@ -198,7 +141,7 @@ void points_draw(double t)
 	//glutSwapBuffers();
 }
 
-void assin_draw()
+void assin_draw()		//绘制所有被分配到顶点的点
 {
 	glPushMatrix();
 	//std::vector <Point>::iterator iter;
@@ -215,9 +158,6 @@ void assin_draw()
 		}
 		
 	}
-
-	//for (iter = points_re.begin(); iter != points_re.end(); iter++)
-		//glVertex2f(iter->hx(), iter->hy());
 	glEnd();
 	glPopMatrix();
 }

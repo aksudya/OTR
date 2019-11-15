@@ -25,12 +25,10 @@ void OTR::Init(vector<Point> input)
 
 	pri_cost = 0;
 	iter_times = 0;
-	//delaunay_temp = delaunay_input;
 }
 
 void OTR::InitPriQueue()
 {
-	//delaunay_temp = delaunay_input;
 	int kk = 0;
 	for (auto eiter = tgl1.finite_edges_begin(); eiter != tgl1.finite_edges_end(); eiter++)
 	{
@@ -38,16 +36,12 @@ void OTR::InitPriQueue()
 
 		tgl2 = tgl1;
 
-		//Point s1 = source_vertex(*eiter)->point();
-		//Point t1 = target_vertex(*eiter)->point();
 		Edge t1_edge = *eiter;
 		Edge t2_edge=FindEdgeInTgl2(t1_edge);
 
 		if (!IsBoderEdge(t2_edge))
 		{
 			MakeCollap(t2_edge);
-
-			//Edge e = t2_edge;
 
 			double cost = CaculateAssinCost();
 			pri_queue_item pi;
@@ -56,9 +50,6 @@ void OTR::InitPriQueue()
 			half_edge_queue.push(pi);
 			vertex_points_map_temp.clear();
 			edge_points_map_temp.clear();
-
-			//caculate cost
-
 
 			assin_points.pop_back();
 		}
@@ -83,16 +74,13 @@ void OTR::InitPriQueue()
 			vertex_points_map_temp.clear();
 			edge_points_map_temp.clear();
 
-			//caculate cost
 
 			assin_points.pop_back();
-			//isborder = false;
 		}
 	
 	}
 	tgl2 = tgl1;
 	cout << kk<<" ";
-	//delaunay_input = delaunay_temp;
 }
 
 
@@ -127,51 +115,52 @@ Edge OTR::FindEdgeInTgl2(Edge e)
 
 void OTR::PickAndCollap()
 {
-	//for (int i = 0; i <80; ++i)
-	//{
-		iter_times++;
-		Edge fst_edge = half_edge_queue.top().half_edge;
-		cout << half_edge_queue.top().cost<<endl;
-		//pri_cost = half_edge_queue.top().cost;
-		Edge fst_edge_tgl2 = FindEdgeInTgl2(fst_edge);
-		half_edge_queue.pop();
-		vertex_handle vs = source_vertex(fst_edge_tgl2);
-		vector<vertex_handle> one_ring_s = GetOneRingVertex(vs);
-		MakeCollap(fst_edge_tgl2);
-		//if (i >= 35 - 17)
-		//{
-			
+
+	iter_times++;
+	Edge fst_edge = half_edge_queue.top().half_edge;
+	cout << half_edge_queue.top().cost << endl;
+	Edge fst_edge_tgl2 = FindEdgeInTgl2(fst_edge);
+	half_edge_queue.pop();
+	vertex_handle vs = source_vertex(fst_edge_tgl2);
+	vector<vertex_handle> one_ring_s = GetOneRingVertex(vs);
+	MakeCollap(fst_edge_tgl2);
+
+
+	CaculateAssinCost();		//为了填充分配Map
+
+	if (iter_times >= 90)		//90为第90次迭代之后使用relocate
+	{
+		ReLocate(one_ring_s, vs->point());
+
+		/*vertex_points_map_temp.clear();
+		edge_points_map_temp.clear();
+
 		CaculateAssinCost();
-		if(iter_times>=90)
-		{
-			ReLocate(one_ring_s, vs->point());
-		}
-		//}
-	
-		vertex_points_map = vertex_points_map_temp;
-		edge_points_map = edge_points_map_temp;
-		vertex_points_map_temp.clear();
-		edge_points_map_temp.clear();
 
-		
+		ReLocate(one_ring_s, vs->point());*/		//relocate 2次,效果会好一点
+	}
+
+	vertex_points_map = vertex_points_map_temp;
+	edge_points_map = edge_points_map_temp;			//为了显示
+	vertex_points_map_temp.clear();
+	edge_points_map_temp.clear();
 
 
-		pri_cost=CaculateAssinCost();
-		
+	pri_cost = CaculateAssinCost();	
 
-		vertex_points_map_temp.clear();
-		edge_points_map_temp.clear();
 
-		tgl1 = tgl2;
-		while (!half_edge_queue.empty())
-		{
-			half_edge_queue.pop();
-		}
-		InitPriQueue();
-		cout << iter_times << " ";
-	//}
-	
-	
+	vertex_points_map_temp.clear();
+	edge_points_map_temp.clear();
+
+	tgl1 = tgl2;
+	while (!half_edge_queue.empty())		//把优先队列清空
+	{
+		half_edge_queue.pop();
+	}
+	InitPriQueue();
+	cout << iter_times << " ";
+
+
 }
 
 void OTR::ReLocate(vector<vertex_handle> ring,Point sp)
@@ -180,26 +169,8 @@ void OTR::ReLocate(vector<vertex_handle> ring,Point sp)
 	vector<pair<vertex_handle,Point>> toMove;
 	for (auto rvit=ring.begin();rvit!=ring.end();rvit++)
 	{
-		//todo
-		double dl = (std::max)((bbox.xmax() - bbox.xmin()) / 2.,
-			(bbox.ymax() - bbox.ymin()) / 2.);
-		Point * p[4];
 
-		p[0] = new Point(bbox.xmin() - dl, bbox.ymin() - dl);
-		p[1] = new Point(bbox.xmin() - dl, bbox.ymax() + dl);
-		p[2] = new Point(bbox.xmax() + dl, bbox.ymax() + dl);
-		p[3] = new Point(bbox.xmax() + dl, bbox.ymin() - dl);
-
-		bool isBox = false;
-		for (int i = 0; i < 4; ++i)
-		{
-			if(PointEqual((*rvit)->point(), *p[i]))
-			{
-				isBox = true;
-				break;
-			}
-		}
-		if(isBox)
+		if (IsBoderPoint((*rvit)->point()))			//跳过边界点
 		{
 			rvid++;
 			continue;
@@ -209,20 +180,10 @@ void OTR::ReLocate(vector<vertex_handle> ring,Point sp)
 		vector<vertex_handle> one_ring_v = GetOneRingVertex(*rvit);
 		if(PointIsInRing(one_ring_v, AfterRelocate))
 		{
-			(*rvit)->point() = AfterRelocate;
-			//pair<vertex_handle, Point> pp(*rvit, AfterRelocate);
-			//toMove.push_back(pp);
+			(*rvit)->point() = AfterRelocate;		//移动点
 		}
 		rvid++;
 	}
-	//for (auto tmit=toMove.begin();tmit!=toMove.end();tmit++)
-	//{
-	//	vertex_handle vm = tmit->first;
-	//	vm->point() = tmit->second;
-
-	//	//tgl2.move_if_no_collision(tmit->first, tmit->second);
-	//}
-	
 }
 
 bool OTR::PointIsInRing(vector<vertex_handle> ring, Point sp)
@@ -268,13 +229,12 @@ Point OTR::Relocatev(vertex_handle v)
 	for (int i = 0; i < v->degree(); ++i)
 	{
 		Edge curedge = *ceiter;
-		if(source_vertex(curedge)!=v)
+		if(source_vertex(curedge)!=v)		//确保方向是正确的
 		{
 			curedge = twin_edge(curedge);
 		}
 
-
-		auto cemp_it = edge_points_map_temp.find(curedge);		//curr_edge map item
+		auto cemp_it = edge_points_map_temp.find(curedge);
 		double bx = target_vertex(curedge)->point().x();
 		double by= target_vertex(curedge)->point().y();
 		if (cemp_it != edge_points_map_temp.end())
@@ -291,9 +251,9 @@ Point OTR::Relocatev(vertex_handle v)
 			}
 		}
 
-		Edge ceitwin = twin_edge(curedge);
-		auto cemp_it1 = edge_points_map_temp.find(ceitwin);		//curr_edge map item
-		double bx1 = source_vertex(ceitwin)->point().x();
+		Edge ceitwin = twin_edge(curedge);						//在Map里可能存的是twin，所以也要找一遍
+		auto cemp_it1 = edge_points_map_temp.find(ceitwin);		
+		double bx1 = source_vertex(ceitwin)->point().x();		//反向的所以是source
 		double by1 = source_vertex(ceitwin)->point().y();
 		if (cemp_it1 != edge_points_map_temp.end())
 		{
@@ -316,7 +276,7 @@ Point OTR::Relocatev(vertex_handle v)
 	double resx = (sumVpx + sumRingEx) / (sumVp + sumRingElow);
 	double resy = (sumVpy + sumRingEy) / (sumVp + sumRingElow);
 
-	if(sumVp+sumRingElow==0)
+	if(sumVp+sumRingElow==0)		//如果分母为0就代表没变，直接复制
 	{
 		resx = v->point().x();
 		resy = v->point().y();
@@ -339,7 +299,7 @@ double OTR::Getlamuda(Edge e, Point p)
 	double x2 = pt.x();
 	double xp = project.x();
 	
-	if(abs(x2-x1)<0.001)
+	if(abs(x2-x1)<0.001)		//x坐标相差太小的话精度可能较低，换y坐标
 	{
 		x1 = ps.y();
 		x2 = pt.y();
@@ -360,14 +320,11 @@ void OTR::MakeCollap(Edge& e)
 		FlipEdge(e);
 		block_edge.clear();
 	}
-	//if (!isborder)
-	//{
-		Edge t_edge = twin_edge(e);
-		tgl2.tds().join_vertices(t_edge.first, t_edge.second);
-		//block_edge.clear();
-	//}
+	Edge t_edge = twin_edge(e);
+	tgl2.tds().join_vertices(t_edge.first, t_edge.second);
+
 	block_edge.clear();
-	//isborder = false;
+
 }
 
 
@@ -392,32 +349,28 @@ double OTR::CaculateAssinCost()
 		double dist2 = get_p_to_edge(*apit, nearest_edge);
 
 		Edge twinn = twin_edge(nearest_edge);
-		auto iter = edge_points_map_temp.find(nearest_edge);
-		auto itert= edge_points_map_temp.find(twinn);
+		auto iter = edge_points_map_temp.find(nearest_edge);		//找最近的那条边e
+		auto itert= edge_points_map_temp.find(twinn);				//找那条边的twine
 
-		if (iter != edge_points_map_temp.end())
+		if (iter != edge_points_map_temp.end())		//如果e已经在map里了
 		{
-			//_Cost cost = iter->second;
-
 			auto find_it = find(iter->second.assined_points.begin(), iter->second.assined_points.end(), *apit);
 			if(find_it== iter->second.assined_points.end())
 			{
 				iter->second.assined_points.push_back(*apit);
 			}
-			//iter->second = cost;
 		}	
-		else
+		else		//如果e没有在map里
 		{
-			if(itert!=edge_points_map_temp.end())
+			if(itert!=edge_points_map_temp.end())		//如果twine在map里
 			{
 				auto find_it = find(itert->second.assined_points.begin(), itert->second.assined_points.end(), *apit);
 				if (find_it == itert->second.assined_points.end())
 				{
 					itert->second.assined_points.push_back(*apit);
 				}
-				//itert->second.assined_points.push_back(*apit);
 			}
-			else
+			else			//如果都不在map里则插入一个新的项
 			{
 				_Cost cost;
 				cost.assined_points.push_back(*apit);
@@ -456,14 +409,13 @@ double OTR::CaculateEachEdgeCost()
 			cost.total_cost = cost.to_vertex_cost;
 			totalcost += cost.total_cost;
 			AssinToVertex(e, cost);
-			Delete_edge.push_back(e);
-			//emit->second = cost;
+			Delete_edge.push_back(e);         //先把要删的边存起来
+
 		}
 	}
-	for (auto deit=Delete_edge.begin();deit!=Delete_edge.end();deit++)
+	for (auto deit=Delete_edge.begin();deit!=Delete_edge.end();deit++)		//删除已经分配给顶点的那些边
 	{
 		edge_points_map_temp.erase(*deit);
-		//Edge e = *deit;
 	}
 	Delete_edge.clear();
 	return totalcost;
@@ -480,7 +432,7 @@ void OTR::AssinToVertex(Edge e, _Cost& c)
 		double dists = squared_distance(*pit, ps);
 		double distt = squared_distance(*pit, pt);
 
-		if (IsBoderPoint(ps))
+		if (IsBoderPoint(ps))		//特判边界点
 		{
 			auto iter = vertex_points_map_temp.find(target_vertex(e));
 
@@ -493,7 +445,7 @@ void OTR::AssinToVertex(Edge e, _Cost& c)
 				_Cost cost;
 				cost.assined_points.push_back(*pit);
 				vertex_points_map_temp.insert(pair<vertex_handle, _Cost>(target_vertex(e), cost));
-				//vertex_points_map_temp.insert(pair<vertex_handle, _Cost>(target_vertex(e), c));
+				
 			}
 			continue;
 		}
@@ -503,17 +455,14 @@ void OTR::AssinToVertex(Edge e, _Cost& c)
 
 			if (iter != vertex_points_map_temp.end())
 			{
-				//for (auto apit=c.assined_points.begin();apit!=c.assined_points.end();apit++)
-				//{
-				iter->second.assined_points.push_back(*pit);
-				//}				
+
+				iter->second.assined_points.push_back(*pit);			
 			}
 			else
 			{
 				_Cost cost;
 				cost.assined_points.push_back(*pit);
 				vertex_points_map_temp.insert(pair<vertex_handle, _Cost>(source_vertex(e), cost));
-				//vertex_points_map_temp.insert(pair<vertex_handle, _Cost>(source_vertex(e), c));
 			}
 			continue;
 		}
@@ -524,10 +473,7 @@ void OTR::AssinToVertex(Edge e, _Cost& c)
 
 			if (iter != vertex_points_map_temp.end())
 			{
-				//for (auto apit=c.assined_points.begin();apit!=c.assined_points.end();apit++)
-				//{
-					iter->second.assined_points.push_back(*pit);
-				//}				
+					iter->second.assined_points.push_back(*pit);			
 			}
 			else
 			{
@@ -590,14 +536,12 @@ void OTR::CaculateTangentialCost(Edge e, _Cost& c)
 	const Point ps = source_vertex(e)->point();
 	const Point pt = target_vertex(e)->point();
 	
-	multimap<double, Point> sort_point_map;
 	vector<double> sort_tos;
 
 	for (auto pit = c.assined_points.begin(); pit != c.assined_points.end(); pit++)
 	{
 		double dist = PointProjectToSource(e, *pit);
 		sort_tos.push_back(dist);
-		//sort_point_map.insert(pair<double, Point>(dist, *pit));
 	}
 	sort(sort_tos.begin(), sort_tos.end());
 
@@ -614,16 +558,6 @@ void OTR::CaculateTangentialCost(Edge e, _Cost& c)
 		centerCord += l;
 	}
 
-	//for (auto pit = c.assined_points.begin(); pit != c.assined_points.end(); pit++)
-	//{
-	//	Segment seg(ps, pt);
-	//	Line le = seg.supporting_line();
-	//	Point project = le.projection(*pit);
-	//	double dist = sqrt( squared_distance(project,ps));
-	//	double sqci = (dist - centerCord)* (dist - centerCord);
-	//	tangential_cost += sql / 12 + sqci;
-	//	centerCord += l;
-	//}
 	c.tangential_cost = tangential_cost;
 }
 
@@ -638,7 +572,7 @@ void OTR::CaculateVertexCost(Edge e, _Cost& c)
 		double dists = squared_distance(*pit, ps);
 		double distt = squared_distance(*pit, pt);
 
-		if(IsBoderPoint(ps))
+		if(IsBoderPoint(ps))		//边界点
 		{
 			Costt += distt;
 			continue;
@@ -747,10 +681,6 @@ Edge OTR::find_nearest_edge(Face_handle f, Point p)
 	for (int i = 0; i < 3; ++i)
 	{
 		Edge edge(f, i);
-		//if(IsBoderEdge(edge))
-		//{
-			//continue;
-		//}
 		double dist2 = get_p_to_edge(p, edge);
 		if (dist2 < min_dist2) {
 			min_dist2 = dist2;
@@ -770,7 +700,6 @@ vector<vertex_handle> OTR::GetOneRingVertex(vertex_handle v)
 		res.push_back(cviter);
 		++cviter;
 	}
-
 
 	return res;
 }
@@ -800,46 +729,11 @@ bool OTR::IsCollapsable(Edge &e)
 	{
 		auto temp = cviter;
 		temp++;
-		//if(tgl2.is_infinite(cviter)||tgl2.is_infinite(temp))
-		//{
-			//isborder = true;
-			//tgl2.remove(start_p);
-			//return true;
-		//}
-		//if((i==start_p->degree()-1)&&temp!= tgl2.incident_vertices(start_p))
-		//{
-		//	//tgl2.remove(start_p);
-		//	break;
-		//}
 
-		double cvx = 0;
-		double cvy = 0;
-		double endx = 0;
-		double endy = 0;
-		double tempx = 0;
-		double tempy = 0;
+		auto xj_a = cviter->point() - end_p->point();
+		auto a_b = temp->point() - cviter->point();
 
-		cvx = cviter->point().x();
-		cvy = cviter->point().y();
-
-		endx = end_p->point().x();
-		endy = end_p->point().y();
-
-		tempx = temp->point().x();
-		tempy = temp->point().y();
-
-		//auto xj_a = cviter->point() - end_p->point();
-		//auto a_b = temp->point() - cviter->point();
-
-		double xjax = cvx - endx;
-		double xjay = cvy - endy;
-		double abx = tempx - cvx;
-		double aby = tempy - cvy;
-
-		//double eps = 1e-9;
-		//bool kkkkkk=abs(a_b.x()) < eps;
-
-		double cross_product = xjax * aby - xjay * abx;
+		double cross_product = xj_a.x() * a_b.y() - xj_a.y() * a_b.x();
 
 		if(cross_product<-DBL_MIN)		//		顺时针
 		{

@@ -5,7 +5,7 @@
 
 #include <CGAL/Polygon_2.h>
 #include <CGAL/Periodic_2_triangulation_2.h>
-#include <GLUT.h>
+#include <gl/GLUT.h>
 #include <iostream>
 #include <cmath>
 #include <random>
@@ -17,7 +17,6 @@ using namespace std;
 
 
 typedef CGAL::Exact_predicates_inexact_constructions_kernel K;
-typedef CGAL::Optimal_transportation_reconstruction_2<K>  OPT;
 
 typedef K::Point_2                                          Point;
 typedef CGAL::Delaunay_triangulation_2<K>					Delaunay;
@@ -41,8 +40,6 @@ public:
 	double tangential_cost=0;
 
 	double total_cost=0;
-
-	//int assin = 0;		//分配给边或是顶点 0 边 1 顶点
 };
 
 
@@ -68,7 +65,7 @@ public:
 	Triangulation tgl2;
 
 	CGAL::Bbox_2 bbox;			//bounding box
-	//Delaunay delaunay_temp;
+
 	double pri_cost;		//	上一次的代价
 
 	int iter_times;
@@ -80,8 +77,6 @@ public:
 
 	map<vertex_handle, _Cost> vertex_points_map_temp;			//
 	map<Edge, _Cost> edge_points_map_temp;					//
-
-	//map<Edge, double>	edge_cost_map;							//每条边的代价 
 
 	vector<vertex_pair> block_edge;				//
 
@@ -97,7 +92,7 @@ public:
 	void Init(vector<Point> input);
 
 	void InitPriQueue();
-	bool IsCollapsable(Edge &e);		//
+	bool IsCollapsable(Edge &e);		
 	void FlipEdge(Edge& e);
 	void MakeCollap(Edge& e);	//合并边，合并后的结果在tgl2中
 	void PickAndCollap();		//	选取队列中第一条边合并
@@ -129,7 +124,7 @@ public:
 
 	double get_p_to_edge(Point p, Edge e);			//获取p到e的距离
 
-	bool compute_triangle_ccw(Point pa,Point pb, Point pc)
+	bool compute_triangle_ccw(Point pa,Point pb, Point pc)		//认为共线为逆时针
 	{
 
 		auto ab = pb - pa;
@@ -138,7 +133,7 @@ public:
 		return cross_product > -DBL_MIN;
 	}
 
-	bool compute_triangle_ccw_line(Point pa, Point pb, Point pc)	//宽松
+	bool compute_triangle_ccw_line(Point pa, Point pb, Point pc)	//认为共线不为逆时针
 	{
 
 		auto ab = pb - pa;
