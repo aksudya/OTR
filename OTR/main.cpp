@@ -7,8 +7,6 @@ std::vector<Point> points_re;
 
 void otr_extrat()
 {
-	//std::vector<Point> points_1;
-	//std::vector<Point> points_re;
 
 	ifstream infile;
 
@@ -22,7 +20,7 @@ void otr_extrat()
 	//	
 	//}											//读入xy文件
 
-	CGAL::Random rng(100);
+	CGAL::Random rng(10);
 	//CGAL::Random_points_on_circle_2<Point> point_generator(1., rng);		//圆上
 	CGAL::Random_points_on_square_2<Point> point_generator(1., rng);			//正方形上
 	////CGAL::Random_points_in_square_2<Point> point_generator(1., rng);		//正方形内
