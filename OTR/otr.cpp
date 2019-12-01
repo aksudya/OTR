@@ -25,6 +25,46 @@ void OTR::Init(vector<Point> input)
 
 	pri_cost = 0;
 	iter_times = 0;
+
+
+	tgl2 = tgl1;
+	//int kkk = 0;
+	CGAL::Random rng(99);
+	for (int i = 0; i < 600; ++i)
+	{
+		
+		int s = rng.get_int(0,tgl2.tds().number_of_edges()-5);
+		for (auto eiter = tgl2.finite_edges_begin(); eiter != tgl2.finite_edges_end(); eiter++)
+		{
+			
+			if(s!=0)
+			{
+				s--;
+				continue;;
+			}
+
+			if (!IsBoderEdge(*eiter))
+			{
+				MakeCollap(*eiter);
+				break;
+			}
+		}
+	}
+
+	//for (auto eiter = tgl2.finite_edges_begin(); eiter != tgl2.finite_edges_end(); eiter++)
+	//{
+	//	if (!IsBoderEdge(*eiter))
+	//	{
+	//		MakeCollap(*eiter);
+	//		//kkk++;
+	//		if (kkk >= 50)
+	//		{
+	//			break;
+	//		}
+	//	}
+	//}
+
+	tgl1 = tgl2;
 }
 
 void OTR::InitPriQueue()
@@ -123,21 +163,41 @@ void OTR::PickAndCollap()
 	half_edge_queue.pop();
 	vertex_handle vs = source_vertex(fst_edge_tgl2);
 	vector<vertex_handle> one_ring_s = GetOneRingVertex(vs);
+
+	//int kkk = 0;
+	//for (auto eiter = tgl2.finite_edges_begin(); eiter != tgl2.finite_edges_end(); eiter++)
+	//{
+	//	if (!IsBoderEdge(*eiter))
+	//	{
+	//		MakeCollap(*eiter);
+	//		kkk++;
+	//		if(kkk>=80)
+	//		{
+	//			break;
+	//		}
+	//	}
+	//}
+
 	MakeCollap(fst_edge_tgl2);
 
 
 	CaculateAssinCost();		//为了填充分配Map
 
-	if (iter_times >= 90)		//90为第90次迭代之后使用relocate
+	if (iter_times >= 2)		//90为第90次迭代之后使用relocate
 	{
 		ReLocate(one_ring_s, vs->point());
 
-		/*vertex_points_map_temp.clear();
-		edge_points_map_temp.clear();
 
-		CaculateAssinCost();
+		for (int i = 0; i < 0; ++i)
+		{
+			vertex_points_map_temp.clear();
+			edge_points_map_temp.clear();
 
-		ReLocate(one_ring_s, vs->point());*/		//relocate 2次,效果会好一点
+			CaculateAssinCost();
+
+			ReLocate(one_ring_s, vs->point());		//relocate 2次,效果会好一点
+		}
+		
 	}
 
 	vertex_points_map = vertex_points_map_temp;
