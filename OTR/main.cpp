@@ -10,7 +10,7 @@ void otr_extrat()
 
 	ifstream infile;
 
-	infile.open("noise2.xy", ios::in);
+	infile.open("stair-noise00.txt", ios::in);
 	while (!infile.eof())           
 	{
 		double x, y;
@@ -28,8 +28,8 @@ void otr_extrat()
 
 	for (auto iter = points_1.begin(); iter != points_1.end(); iter++)
 	{
-		double xx = iter->hx() *30+200;
-		double yy = iter->hy() * 30 + 200;
+		double xx = iter->hx() *500+200;
+		double yy = iter->hy() * 500+200;
 		Point p(xx, yy);
 		points_re.push_back(p);
 	}

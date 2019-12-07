@@ -30,7 +30,7 @@ void OTR::Init(vector<Point> input)
 	tgl2 = tgl1;
 	//int kkk = 0;
 	CGAL::Random rng(99);
-	for (int i = 0; i < 600; ++i)
+	for (int i = 0; i < 1; ++i)
 	{
 		
 		int s = rng.get_int(0,tgl2.tds().number_of_edges()-5);
@@ -117,7 +117,6 @@ void OTR::InitPriQueue()
 
 			assin_points.pop_back();
 		}
-	
 	}
 	tgl2 = tgl1;
 	cout << kk<<" ";
@@ -183,7 +182,7 @@ void OTR::PickAndCollap()
 
 	CaculateAssinCost();		//为了填充分配Map
 
-	if (iter_times >= 2)		//90为第90次迭代之后使用relocate
+	if (iter_times >= 80)		//90为第90次迭代之后使用relocate
 	{
 		ReLocate(one_ring_s, vs->point());
 
