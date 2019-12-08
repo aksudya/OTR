@@ -48,7 +48,7 @@ public:
 class pri_queue_item
 {
 public:
-	Edge half_edge;
+	Segment edge;
 	double cost;
 
 	bool operator < (const pri_queue_item& a) const 
@@ -66,6 +66,9 @@ public:
 	Triangulation tgl1;
 	Triangulation tgl2;
 
+	mymesh ms1;
+	mymesh ms2;
+
 	CGAL::Bbox_2 bbox;			//bounding box
 
 	double pri_cost;		//	上一次的代价
@@ -74,17 +77,17 @@ public:
 
 	priority_queue<pri_queue_item> half_edge_queue;					//代价函数的优先队列
 
-	map<vertex_handle, _Cost> vertex_points_map;			//点到顶点的分配
-	map<Edge, _Cost> edge_points_map;					//点到边的分配
+	map<Point, _Cost> vertex_points_map;			//点到顶点的分配
+	map<Segment, _Cost,Segment_more> edge_points_map;					//点到边的分配
 
-	map<vertex_handle, _Cost> vertex_points_map_temp;			//
-	map<Edge, _Cost> edge_points_map_temp;					//
+	map<Point, _Cost> vertex_points_map_temp;			//
+	map<Segment, _Cost, Segment_more> edge_points_map_temp;					//
 
 	vector<vertex_pair> block_edge;				//
 
 	vector<Point> assin_points;					//待分配的顶点
 
-	vector<Edge> Delete_edge;				//分配到顶点后从边表中删除的边
+	vector<Segment> Delete_edge;				//分配到顶点后从边表中删除的边
 
 
 	OTR();
@@ -98,15 +101,16 @@ public:
 	void FlipEdge(Edge& e);
 	void MakeCollap(Edge& e);	//合并边，合并后的结果在tgl2中
 	void PickAndCollap();		//	选取队列中第一条边合并
+	void GetVaild();			//获取有效边并更新ms2
 
 	double CaculateAssinCost();		//计算当前分配方案总代价
 	double CaculateEachEdgeCost();	//计算每条边的代价
-	double PointProjectToSource(Edge e, Point p);	//计算点p在e上的投影到e原点的距离
+	double PointProjectToSource(Segment e, Point p);	//计算点p在e上的投影到e原点的距离
 
-	void CaculateNormalCost(Edge e, _Cost &c);	//计算法向代价
-	void CaculateTangentialCost(Edge e, _Cost& c);	//计算切向代价
-	void CaculateVertexCost(Edge e, _Cost& c);	//计算切向代价
-	void AssinToVertex(Edge e, _Cost& c);		//重新分配给顶点
+	void CaculateNormalCost(Segment e, _Cost &c);	//计算法向代价
+	void CaculateTangentialCost(Segment e, _Cost& c);	//计算切向代价
+	void CaculateVertexCost(Segment e, _Cost& c);	//计算切向代价
+	void AssinToVertex(Segment e, _Cost& c);		//重新分配给顶点
 	void ReLocate(vector<vertex_handle> ring,Point sp);	//relocate sp为合并边的源点
 
 	Point Relocatev(vertex_handle v);		//relocate顶点v
@@ -124,7 +128,7 @@ public:
 
 	vector<vertex_handle> GetOneRingVertex(vertex_handle v);	//获取tgl2中顶点v周围一圈的顶点
 
-	double get_p_to_edge(Point p, Edge e);			//获取p到e的距离
+	double get_p_to_edge(Point p, Segment e);			//获取p到e的距离
 
 	bool compute_triangle_ccw(Point pa,Point pb, Point pc)		//认为共线为逆时针
 	{
@@ -167,6 +171,12 @@ public:
 		vertex_handle v = source_vertex(edge);
 		Face_handle nf = f->neighbor(edge.second);
 		return Edge(nf, tgl2.ccw(nf->index(v)));
+	}
+
+	Segment twin_edge(Segment& edge)
+	{
+		Segment re(edge.target(), edge.source());
+		return re;
 	}
 
 	vertex_handle opposite_vertex(Edge& edge)

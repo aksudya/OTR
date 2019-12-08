@@ -29,19 +29,42 @@ typedef CGAL::Polygon_2<K>									Polygon_2;
 typedef K::Line_2											Line;
 typedef pair<vertex_handle, vertex_handle>					vertex_pair;
 
-
+struct Segment_more {
+	bool operator()(const Segment& s1, const Segment& s2) const
+	{
+		if(s1.source()==s2.source())
+		{
+			return s1.target() < s2.target();
+		}
+		else
+		{
+			return s1.source() < s2.source();
+		}
+		
+	}
+};
 
 class mymesh
 {
 public:
 	set<Point> Vertexs;
-	set<Segment> edges;
+	set<Segment, Segment_more> edges;
+	//set<Point> IsoVertexs;
 
 	mymesh();
 	~mymesh();
 
 	Point FindNearestVertex(Point &p);
 	Segment FindNearestEdge(Point& p);
-	void MakeCollaps(Point& s, Point& t);
+	int MakeCollaps(const Point& s, const Point& t);
+	void Clear();
+
+	mymesh& operator = (const mymesh& t) 
+	{
+		Vertexs = t.Vertexs;
+		edges = t.edges;
+		//IsoVertexs = t.IsoVertexs;
+		return *this;
+	}
 };
 

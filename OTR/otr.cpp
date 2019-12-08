@@ -7,119 +7,105 @@ OTR::OTR()
 void OTR::Init(vector<Point> input)
 {
 	points_input = input;
-	delaunay_input.insert(input.begin(), input.end());
-	bbox=bbox_2(input.begin(), input.end());
-	double dl = (std::max)((bbox.xmax() - bbox.xmin()) / 2.,
-		(bbox.ymax() - bbox.ymin()) / 2.);
-	Point p1(bbox.xmin() - dl, bbox.ymin() - dl);
-	Point p2(bbox.xmin() - dl, bbox.ymax() + dl);
-	Point p3(bbox.xmax() + dl, bbox.ymax() + dl);
-	Point p4(bbox.xmax() + dl, bbox.ymin() - dl);
-	delaunay_input.insert(p1);
-	delaunay_input.insert(p2);
-	delaunay_input.insert(p3);
-	delaunay_input.insert(p4);
-
-	tgl1 = delaunay_input;
-	isborder = false;
-
-	pri_cost = 0;
-	iter_times = 0;
-
-
-	tgl2 = tgl1;
-	//int kkk = 0;
-	CGAL::Random rng(99);
-	for (int i = 0; i < 1; ++i)
+	default_random_engine engine(0);
+	vector<bool> index(input.size(),false);
+	for (int i = 0; i < 0.2*input.size(); ++i)
 	{
-		
-		int s = rng.get_int(0,tgl2.tds().number_of_edges()-5);
-		for (auto eiter = tgl2.finite_edges_begin(); eiter != tgl2.finite_edges_end(); eiter++)
+		uniform_int_distribution<int> ud(0, input.size() - 1);
+		int id = ud(engine);
+		while (index[id])
 		{
-			
-			if(s!=0)
-			{
-				s--;
-				continue;;
-			}
+			id = ud(engine);
+		}
+		index[id]=true;
+	}
 
-			if (!IsBoderEdge(*eiter))
-			{
-				MakeCollap(*eiter);
-				break;
-			}
+	for (int i = 0; i < input.size(); ++i)
+	{
+		if(index[i])
+		{
+			delaunay_input.insert(points_input[i]);
+		}
+		else
+		{
+			assin_points.push_back(points_input[i]);
 		}
 	}
 
-	//for (auto eiter = tgl2.finite_edges_begin(); eiter != tgl2.finite_edges_end(); eiter++)
-	//{
-	//	if (!IsBoderEdge(*eiter))
-	//	{
-	//		MakeCollap(*eiter);
-	//		//kkk++;
-	//		if (kkk >= 50)
-	//		{
-	//			break;
-	//		}
-	//	}
-	//}
+	for (auto vit=delaunay_input.finite_vertices_begin();vit!=delaunay_input.finite_vertices_end();++vit)
+	{
+		ms1.Vertexs.insert(vit->point());
+	}
 
-	tgl1 = tgl2;
+	for (auto eit = delaunay_input.finite_edges_begin(); eit != delaunay_input.finite_edges_end(); ++eit)
+	{
+		Segment s(source_vertex(*eit)->point(), target_vertex(*eit)->point());
+		ms1.edges.insert(s);
+	}
+
+	pri_cost = 0;
+	iter_times = 0;
+	ms2 = ms1;
 }
 
 void OTR::InitPriQueue()
 {
 	int kk = 0;
-	for (auto eiter = tgl1.finite_edges_begin(); eiter != tgl1.finite_edges_end(); eiter++)
+	for (auto eit=ms1.edges.begin();eit!=ms1.edges.end();++eit)
 	{
 		kk++;
+		ms2 = ms1;
+		Segment edge1 = *eit;
 
-		tgl2 = tgl1;
 
-		Edge t1_edge = *eiter;
-		Edge t2_edge=FindEdgeInTgl2(t1_edge);
 
-		if (!IsBoderEdge(t2_edge))
+		int re=ms2.MakeCollaps(edge1.source(), edge1.target());
+		if(re==1)
 		{
-			MakeCollap(t2_edge);
+			assin_points.push_back(edge1.target());
+		}
+		assin_points.push_back(edge1.source());
+		double cost = CaculateAssinCost();
 
-			double cost = CaculateAssinCost();
-			pri_queue_item pi;
-			pi.half_edge = t1_edge;
-			pi.cost = cost-pri_cost;
-			half_edge_queue.push(pi);
-			vertex_points_map_temp.clear();
-			edge_points_map_temp.clear();
-
+		pri_queue_item pi;
+		pi.edge= edge1;
+		pi.cost = cost - pri_cost;
+		half_edge_queue.push(pi);
+		vertex_points_map_temp.clear();
+		edge_points_map_temp.clear();
+		assin_points.pop_back();
+		if(re==1)
+		{
 			assin_points.pop_back();
 		}
 
 
+		ms2 = ms1;
+		Segment edge1t = twin_edge(edge1);
 
-		tgl2 = tgl1;
-		Edge t1_edge_twin = twin_edge(t1_edge);
-
-
-		if (!IsBoderEdge(t1_edge_twin))
+		int re1 = ms2.MakeCollaps(edge1t.source(), edge1t.target());
+		if (re1 == 1)
 		{
-			Edge t2_edge_twin = FindEdgeInTgl2(t1_edge_twin);
-			MakeCollap(t2_edge_twin);
+			assin_points.push_back(edge1t.target());
+		}
+		assin_points.push_back(edge1t.source());
+		double cost1 = CaculateAssinCost();
 
-
-			double cost1 = CaculateAssinCost();
-			pri_queue_item pi1;
-			pi1.half_edge = t1_edge_twin;
-			pi1.cost = cost1- pri_cost;
-			half_edge_queue.push(pi1);
-			vertex_points_map_temp.clear();
-			edge_points_map_temp.clear();
-
-
+		pri_queue_item pi1;
+		pi1.edge = edge1t;
+		pi1.cost = cost1- pri_cost;
+		half_edge_queue.push(pi1);
+		vertex_points_map_temp.clear();
+		edge_points_map_temp.clear();
+		assin_points.pop_back();
+		if (re1 == 1)
+		{
 			assin_points.pop_back();
 		}
+
 	}
-	tgl2 = tgl1;
-	cout << kk<<" ";
+	ms2 = ms1;
+	cout << kk << " ";
 }
 
 
@@ -154,72 +140,64 @@ Edge OTR::FindEdgeInTgl2(Edge e)
 
 void OTR::PickAndCollap()
 {
-
 	iter_times++;
-	Edge fst_edge = half_edge_queue.top().half_edge;
-	cout << half_edge_queue.top().cost << endl;
-	Edge fst_edge_tgl2 = FindEdgeInTgl2(fst_edge);
-	half_edge_queue.pop();
-	vertex_handle vs = source_vertex(fst_edge_tgl2);
-	vector<vertex_handle> one_ring_s = GetOneRingVertex(vs);
-
-	//int kkk = 0;
-	//for (auto eiter = tgl2.finite_edges_begin(); eiter != tgl2.finite_edges_end(); eiter++)
-	//{
-	//	if (!IsBoderEdge(*eiter))
-	//	{
-	//		MakeCollap(*eiter);
-	//		kkk++;
-	//		if(kkk>=80)
-	//		{
-	//			break;
-	//		}
-	//	}
-	//}
-
-	MakeCollap(fst_edge_tgl2);
+	CaculateAssinCost();
 
 
-	CaculateAssinCost();		//为了填充分配Map
-
-	if (iter_times >= 80)		//90为第90次迭代之后使用relocate
-	{
-		ReLocate(one_ring_s, vs->point());
-
-
-		for (int i = 0; i < 0; ++i)
-		{
-			vertex_points_map_temp.clear();
-			edge_points_map_temp.clear();
-
-			CaculateAssinCost();
-
-			ReLocate(one_ring_s, vs->point());		//relocate 2次,效果会好一点
-		}
-		
-	}
+	GetVaild();
+	ms1 = ms2;
 
 	vertex_points_map = vertex_points_map_temp;
 	edge_points_map = edge_points_map_temp;			//为了显示
 	vertex_points_map_temp.clear();
 	edge_points_map_temp.clear();
-
-
-	pri_cost = CaculateAssinCost();	
-
+	pri_cost = CaculateAssinCost();
 
 	vertex_points_map_temp.clear();
 	edge_points_map_temp.clear();
+	InitPriQueue();
 
-	tgl1 = tgl2;
+	Segment fst_edge = half_edge_queue.top().edge;
+	cout << half_edge_queue.top().cost << endl;
+
+	int re=ms2.MakeCollaps(fst_edge.source(), fst_edge.target());
+	if (re == 1)
+	{
+		assin_points.push_back(fst_edge.target());
+	}
+	assin_points.push_back(fst_edge.source());
+
+	ms1 = ms2;
+
 	while (!half_edge_queue.empty())		//把优先队列清空
 	{
 		half_edge_queue.pop();
 	}
-	InitPriQueue();
+	
 	cout << iter_times << " ";
+}
 
-
+void OTR::GetVaild()
+{
+	ms2.Clear();
+	assin_points.clear();
+	for (auto epmit=edge_points_map_temp.begin();epmit!= edge_points_map_temp.end();++epmit)
+	{
+		if(!epmit->second.assined_points.empty())
+		{
+			ms2.edges.insert(epmit->first);
+			ms2.Vertexs.insert(epmit->first.source());
+			ms2.Vertexs.insert(epmit->first.target());
+		}
+	}
+	for (auto ipit=points_input.begin();ipit!=points_input.end();++ipit)
+	{
+		Point ip = *ipit;
+		if(ms2.Vertexs.find(ip)==ms2.Vertexs.end())
+		{
+			assin_points.push_back(ip);
+		}
+	}
 }
 
 void OTR::ReLocate(vector<vertex_handle> ring,Point sp)
@@ -393,35 +371,27 @@ double OTR::CaculateAssinCost()
 	
 	for (auto apit=assin_points.begin();apit!=assin_points.end();apit++)
 	{
-		Face_handle face_now;
-		for (auto fit=tgl2.all_faces_begin();fit!=tgl2.all_faces_end();fit++)
-		{
-			if(face_has_point(*apit,fit))
-			{
-				face_now = fit;
-				break;
-			}
-		}
+		Point pnow = *apit;
+		Segment nearest_edge = ms2.FindNearestEdge(pnow);
 
-		Edge nearest_edge = find_nearest_edge(face_now, *apit);
 
-		double dist2 = get_p_to_edge(*apit, nearest_edge);
+		double dist2 = get_p_to_edge(pnow, nearest_edge);
 
-		Edge twinn = twin_edge(nearest_edge);
+		Segment twinn = twin_edge(nearest_edge);
 		auto iter = edge_points_map_temp.find(nearest_edge);		//找最近的那条边e
-		auto itert= edge_points_map_temp.find(twinn);				//找那条边的twine
+		auto itert = edge_points_map_temp.find(twinn);				//找那条边的twine
 
 		if (iter != edge_points_map_temp.end())		//如果e已经在map里了
 		{
 			auto find_it = find(iter->second.assined_points.begin(), iter->second.assined_points.end(), *apit);
-			if(find_it== iter->second.assined_points.end())
+			if (find_it == iter->second.assined_points.end())
 			{
 				iter->second.assined_points.push_back(*apit);
 			}
-		}	
+		}
 		else		//如果e没有在map里
 		{
-			if(itert!=edge_points_map_temp.end())		//如果twine在map里
+			if (itert != edge_points_map_temp.end())		//如果twine在map里
 			{
 				auto find_it = find(itert->second.assined_points.begin(), itert->second.assined_points.end(), *apit);
 				if (find_it == itert->second.assined_points.end())
@@ -433,11 +403,11 @@ double OTR::CaculateAssinCost()
 			{
 				_Cost cost;
 				cost.assined_points.push_back(*apit);
-				edge_points_map_temp.insert(pair<Edge, _Cost>(nearest_edge,cost));
+				edge_points_map_temp.insert(pair<Segment, _Cost>(nearest_edge, cost));
 			}
-			
 		}
 	}
+
 
 	double cost=CaculateEachEdgeCost();
 
@@ -450,14 +420,14 @@ double OTR::CaculateEachEdgeCost()
 	double totalcost = 0;
 	for (auto emit=edge_points_map_temp.begin();emit!=edge_points_map_temp.end();emit++)
 	{
-		Edge e = emit->first;
+		Segment e = emit->first;
 		_Cost cost = emit->second;
 		CaculateNormalCost(e, cost);
 
 		CaculateTangentialCost(e, cost);
 		cost.to_edge_cost = cost.normal_cost + cost.tangential_cost;
 		CaculateVertexCost(e, cost);
-		if(cost.to_edge_cost<cost.to_vertex_cost && !IsBoderEdge(e))		//分配给边
+		if(cost.to_edge_cost<cost.to_vertex_cost)		//分配给边
 		{
 			cost.total_cost = cost.to_edge_cost;
 			totalcost += cost.total_cost;
@@ -482,53 +452,19 @@ double OTR::CaculateEachEdgeCost()
 
 
 
-void OTR::AssinToVertex(Edge e, _Cost& c)
+void OTR::AssinToVertex(Segment e, _Cost& c)
 {
-	const Point ps = source_vertex(e)->point();
-	const Point pt = target_vertex(e)->point();
+	const Point ps = e.source();
+	const Point pt = e.target();
 	for (auto pit = c.assined_points.begin(); pit != c.assined_points.end(); pit++)
 	{
 		double dists = squared_distance(*pit, ps);
 		double distt = squared_distance(*pit, pt);
 
-		if (IsBoderPoint(ps))		//特判边界点
-		{
-			auto iter = vertex_points_map_temp.find(target_vertex(e));
-
-			if (iter != vertex_points_map_temp.end())
-			{
-				iter->second.assined_points.push_back(*pit);
-			}
-			else
-			{
-				_Cost cost;
-				cost.assined_points.push_back(*pit);
-				vertex_points_map_temp.insert(pair<vertex_handle, _Cost>(target_vertex(e), cost));
-				
-			}
-			continue;
-		}
-		else if (IsBoderPoint(pt))
-		{
-			auto iter = vertex_points_map_temp.find(source_vertex(e));
-
-			if (iter != vertex_points_map_temp.end())
-			{
-
-				iter->second.assined_points.push_back(*pit);			
-			}
-			else
-			{
-				_Cost cost;
-				cost.assined_points.push_back(*pit);
-				vertex_points_map_temp.insert(pair<vertex_handle, _Cost>(source_vertex(e), cost));
-			}
-			continue;
-		}
 
 		if (dists < distt)	//分配给s
 		{
-			auto iter = vertex_points_map_temp.find(source_vertex(e));
+			auto iter = vertex_points_map_temp.find(ps);
 
 			if (iter != vertex_points_map_temp.end())
 			{
@@ -538,13 +474,13 @@ void OTR::AssinToVertex(Edge e, _Cost& c)
 			{
 				_Cost cost;
 				cost.assined_points.push_back(*pit);
-				vertex_points_map_temp.insert(pair<vertex_handle, _Cost>(source_vertex(e), cost));
+				vertex_points_map_temp.insert(pair<Point, _Cost>(ps, cost));
 				//vertex_points_map_temp.insert(pair<vertex_handle, _Cost>(source_vertex(e), c));
 			}
 		}
 		else
 		{
-			auto iter = vertex_points_map_temp.find(target_vertex(e));
+			auto iter = vertex_points_map_temp.find(pt);
 
 			if (iter != vertex_points_map_temp.end())
 			{
@@ -557,7 +493,7 @@ void OTR::AssinToVertex(Edge e, _Cost& c)
 			{
 				_Cost cost;
 				cost.assined_points.push_back(*pit);
-				vertex_points_map_temp.insert(pair<vertex_handle, _Cost>(target_vertex(e), cost));
+				vertex_points_map_temp.insert(pair<Point, _Cost>(pt, cost));
 				//vertex_points_map_temp.insert(pair<vertex_handle, _Cost>(target_vertex(e), c));
 			}
 		}
@@ -567,7 +503,7 @@ void OTR::AssinToVertex(Edge e, _Cost& c)
 
 
 
-void OTR::CaculateNormalCost(Edge e, _Cost& c)
+void OTR::CaculateNormalCost(Segment e, _Cost& c)
 {
 	double normal_cost = 0;
 	for (auto pit=c.assined_points.begin();pit!=c.assined_points.end();pit++)
@@ -577,23 +513,22 @@ void OTR::CaculateNormalCost(Edge e, _Cost& c)
 	c.normal_cost = normal_cost;
 }
 
-double OTR::PointProjectToSource(Edge e, Point p)
+double OTR::PointProjectToSource(Segment e, Point p)
 {
-	const Point ps = source_vertex(e)->point();
-	const Point pt = target_vertex(e)->point();
-	Segment seg(ps, pt);
-	Line le = seg.supporting_line();
+	const Point ps = e.source();
+	//const Point pt = target_vertex(e)->point();
+	Line le = e.supporting_line();
 	Point project = le.projection(p);
 	double dist = sqrt(squared_distance(project, ps));
 	return dist;
 }
 
-void OTR::CaculateTangentialCost(Edge e, _Cost& c)
+void OTR::CaculateTangentialCost(Segment e, _Cost& c)
 {
 	double tangential_cost = 0;
 	double centerCord;		//每段中点的坐标
-	const Point ps = source_vertex(e)->point();
-	const Point pt = target_vertex(e)->point();
+	const Point ps = e.source();
+	const Point pt = e.target();
 	
 	vector<double> sort_tos;
 
@@ -620,27 +555,16 @@ void OTR::CaculateTangentialCost(Edge e, _Cost& c)
 	c.tangential_cost = tangential_cost;
 }
 
-void OTR::CaculateVertexCost(Edge e, _Cost& c)
+void OTR::CaculateVertexCost(Segment e, _Cost& c)
 {
-	const Point ps = source_vertex(e)->point();
-	const Point pt = target_vertex(e)->point();
+	const Point ps = e.source();
+	const Point pt = e.target();
 	double CostS = 0;
 	double Costt = 0;
 	for (auto pit = c.assined_points.begin(); pit != c.assined_points.end(); pit++)
 	{
 		double dists = squared_distance(*pit, ps);
 		double distt = squared_distance(*pit, pt);
-
-		if(IsBoderPoint(ps))		//边界点
-		{
-			Costt += distt;
-			continue;
-		}
-		else if(IsBoderPoint(pt))
-		{
-			CostS += dists;
-			continue;
-		}
 
 		if(dists<distt)
 		{
@@ -733,22 +657,7 @@ bool OTR::PointEqual(Point a, Point b)
 
 
 
-Edge OTR::find_nearest_edge(Face_handle f, Point p)
-{
-	Edge nearest(f, 0);
-	double min_dist2 =DBL_MAX;
-	for (int i = 0; i < 3; ++i)
-	{
-		Edge edge(f, i);
-		double dist2 = get_p_to_edge(p, edge);
-		if (dist2 < min_dist2) {
-			min_dist2 = dist2;
-			nearest = edge;
-		}
-	}
 
-	return nearest;
-}
 
 vector<vertex_handle> OTR::GetOneRingVertex(vertex_handle v)
 {
@@ -763,15 +672,9 @@ vector<vertex_handle> OTR::GetOneRingVertex(vertex_handle v)
 	return res;
 }
 
-double OTR::get_p_to_edge(Point p, Edge e)
+double OTR::get_p_to_edge(Point p, Segment e)
 {
-	const Point ps = source_vertex(e)->point();
-	const Point pt = target_vertex(e)->point();
-	Segment seg(ps, pt);
-
-	Line lst = seg.supporting_line();
-
-	double dist =sqrt( squared_distance(p, lst));
+	double dist =sqrt( squared_distance(p, e));
 	return dist;
 }
 

@@ -37,9 +37,11 @@ Segment mymesh::FindNearestEdge(Point& p)
 	return re;
 }
 
-void mymesh::MakeCollaps(Point& s, Point& t)
+int mymesh::MakeCollaps(const Point& s, const Point& t)
 {
 	vector<Point> stars;
+	vector<Point> starp;
+	Vertexs.erase(s);
 	for (auto eit=edges.begin();eit!=edges.end();++eit)
 	{
 		if(eit->source()==s)
@@ -57,6 +59,25 @@ void mymesh::MakeCollaps(Point& s, Point& t)
 			}
 		}
 	}
+
+	for (auto eit = edges.begin(); eit != edges.end(); ++eit)
+	{
+		if (eit->source() == t)
+		{
+			if (eit->target() != s)
+			{
+				starp.push_back(eit->target());
+			}
+		}
+		if (eit->target() == t)
+		{
+			if (eit->source() != s)
+			{
+				starp.push_back(eit->source());
+			}
+		}
+	}
+
 	for (auto sit=stars.begin();sit!=stars.end();++sit)
 	{
 		Segment ss1(*sit, s);
@@ -79,4 +100,21 @@ void mymesh::MakeCollaps(Point& s, Point& t)
 
 	edges.erase(ss1);
 	edges.erase(ss2);
+
+	if(stars.empty()&&starp.empty())
+	{
+		Vertexs.erase(t);
+		return 1;
+	}
+	else
+	{
+		return 0;
+	}
+}
+
+void mymesh::Clear()
+{
+	Vertexs.clear();
+	edges.clear();
+	//IsoVertexs.clear();
 }
