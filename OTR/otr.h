@@ -113,8 +113,9 @@ public:
 	void AssinToVertex(Segment e, _Cost& c);		//重新分配给顶点
 	void ReLocate(vector<vertex_handle> ring,Point sp);	//relocate sp为合并边的源点
 
-	Point Relocatev(vertex_handle v);		//relocate顶点v
-	double Getlamuda(Edge e, Point p);		//获取点P在e上投影的重心坐标lamuda
+	Point Relocatev(Point v);		//relocate顶点v
+	double Getlamuda(Segment e, Point p);		//获取点P在e上投影的重心坐标lamuda
+	void applyRelocate(Point& s, Point& t);		//将s移到t
 
 	Edge FindEdgeInTgl2(Edge e);
 
@@ -126,7 +127,7 @@ public:
 
 	Edge find_nearest_edge(Face_handle f, Point p);		//找到面f里离p最近的边
 
-	vector<vertex_handle> GetOneRingVertex(vertex_handle v);	//获取tgl2中顶点v周围一圈的顶点
+	vector<Point> GetOneRingVertex(Point v);	//获取tgl2中顶点v周围一圈的顶点
 
 	double get_p_to_edge(Point p, Segment e);			//获取p到e的距离
 

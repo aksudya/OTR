@@ -21,21 +21,23 @@ void otr_extrat()
 	}											//读入xy文件
 
 	//CGAL::Random rng(3);
-	//CGAL::Random_points_on_circle_2<Point> point_generator(1., rng);		//圆上
-	////CGAL::Random_points_on_square_2<Point> point_generator(1., rng);			//正方形上
+	////CGAL::Random_points_on_circle_2<Point> point_generator(1., rng);		//圆上
+	//CGAL::Random_points_on_square_2<Point> point_generator(1., rng);			//正方形上
 	//////CGAL::Random_points_in_square_2<Point> point_generator(1., rng);		//正方形内
 	//CGAL::cpp11::copy_n(point_generator, 500, std::back_inserter(points_1));	//100为生成点的个数
 
 	for (auto iter = points_1.begin(); iter != points_1.end(); iter++)
 	{
-		double xx = iter->hx() *500+150;
-		double yy = iter->hy() * 500+150;
+		double xx = iter->hx() *500+100;
+		double yy = iter->hy() * 500 +100;
 		Point p(xx, yy);
 		points_re.push_back(p);
 	}
 	
 	//OTR a;
 	a.Init(points_re);
+	//a.CaculateAssinCost();
+	//a.GetVaild();
 	
 }
 
@@ -45,7 +47,7 @@ void lines_draw(double t)	//画tgl2中的线
 	//glClear(GL_COLOR_BUFFER_BIT);
 	glPushMatrix();
 	glColor3f(0.0, 1.0, t);
-	glLineWidth(1);
+	glLineWidth(3);
 	
 	int kk = 0;
 
@@ -156,9 +158,25 @@ void keybordClick(unsigned char key, int x, int y)
 		glPushMatrix();
 		a.PickAndCollap();
 		points_draw(0.5);
+		assin_draw();
 		lines_draw(0.5);
 		points_draw_dt(1);
+		
+		glPopMatrix();
+		glutSwapBuffers();
+	}
+	else if(key=='t')
+	{
+		a.CaculateAssinCost();
+		a.GetVaild();
+		glClear(GL_COLOR_BUFFER_BIT);
+		glPushMatrix();
+		//a.PickAndCollap();
+		points_draw(0.5);
 		assin_draw();
+		lines_draw(0.5);
+		points_draw_dt(1);
+
 		glPopMatrix();
 		glutSwapBuffers();
 	}
