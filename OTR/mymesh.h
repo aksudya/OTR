@@ -6,7 +6,7 @@
 #include <list>
 #include <CGAL/Polygon_2.h>
 #include <CGAL/Periodic_2_triangulation_2.h>
-#include <GLUT.h>
+#include <gl/GLUT.h>
 #include <iostream>
 #include <cmath>
 #include <random>

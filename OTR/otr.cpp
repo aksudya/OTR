@@ -200,169 +200,169 @@ void OTR::GetVaild()
 	}
 }
 
-void OTR::ReLocate(vector<vertex_handle> ring,Point sp)
-{
-	int rvid = 0;
-	vector<pair<vertex_handle,Point>> toMove;
-	for (auto rvit=ring.begin();rvit!=ring.end();rvit++)
-	{
-
-		if (IsBoderPoint((*rvit)->point()))			//跳过边界点
-		{
-			rvid++;
-			continue;
-		}
-
-		Point AfterRelocate = Relocatev(*rvit);
-		vector<vertex_handle> one_ring_v = GetOneRingVertex(*rvit);
-		if(PointIsInRing(one_ring_v, AfterRelocate))
-		{
-			(*rvit)->point() = AfterRelocate;		//移动点
-		}
-		rvid++;
-	}
-}
-
-bool OTR::PointIsInRing(vector<vertex_handle> ring, Point sp)
-{
-	bool isIn = true;
-	for (int i = 0; i < ring.size(); ++i)
-	{
-		Point p1 = ring[i]->point();
-		int nexti = (i + 1) % (int)ring.size();
-		Point p2 = ring[nexti]->point();
-		if(!compute_triangle_ccw_line(p1,p2,sp))
-		{
-			isIn = false;
-			break;
-		}
-	}
-	return isIn;
-}
-
-Point OTR::Relocatev(vertex_handle v)
-{
-	auto vcit=vertex_points_map_temp.find(v);
-
-	double sumVpx = 0;
-	double sumVpy = 0;
-	int sumVp=0;
-	if (vcit != vertex_points_map_temp.end())
-	{
-		_Cost v_cost = vcit->second;
-		for (auto vcpit=v_cost.assined_points.begin();vcpit!=v_cost.assined_points.end();vcpit++)
-		{
-			sumVpx += vcpit->x();
-			sumVpy += vcpit->y();
-			sumVp++;
-		}
-	}
-
-	double sumRingEx = 0;
-	double sumRingEy = 0;
-	double sumRingElow = 0;
-	auto ceiter = tgl2.incident_edges(v);
-	
-	for (int i = 0; i < v->degree(); ++i)
-	{
-		Edge curedge = *ceiter;
-		if(source_vertex(curedge)!=v)		//确保方向是正确的
-		{
-			curedge = twin_edge(curedge);
-		}
-
-		auto cemp_it = edge_points_map_temp.find(curedge);
-		double bx = target_vertex(curedge)->point().x();
-		double by= target_vertex(curedge)->point().y();
-		if (cemp_it != edge_points_map_temp.end())
-		{
-			_Cost v_cost = cemp_it->second;					
-			for (auto cepit = v_cost.assined_points.begin(); cepit != v_cost.assined_points.end(); cepit++)		//当前边的上的每个点
-			{
-				double lamuda = Getlamuda(curedge, *cepit);
-				double pix = cepit->x();
-				double piy = cepit->y();
-				sumRingEx += (1 - lamuda) * (pix - lamuda * bx);
-				sumRingEy += (1 - lamuda) * (piy - lamuda * by);
-				sumRingElow += (1 - lamuda) * (1 - lamuda);
-			}
-		}
-
-		Edge ceitwin = twin_edge(curedge);						//在Map里可能存的是twin，所以也要找一遍
-		auto cemp_it1 = edge_points_map_temp.find(ceitwin);		
-		double bx1 = source_vertex(ceitwin)->point().x();		//反向的所以是source
-		double by1 = source_vertex(ceitwin)->point().y();
-		if (cemp_it1 != edge_points_map_temp.end())
-		{
-			_Cost v_cost = cemp_it1->second;
-			for (auto cepit = v_cost.assined_points.begin(); cepit != v_cost.assined_points.end(); cepit++)		//当前边的上的每个点
-			{
-				double lamuda = Getlamuda(curedge, *cepit);
-				double pix = cepit->x();
-				double piy = cepit->y();
-				sumRingEx += (1 - lamuda) * (pix - lamuda * bx1);
-				sumRingEy += (1 - lamuda) * (piy - lamuda * by1);
-				sumRingElow += (1 - lamuda) * (1 - lamuda);
-			}
-		}
-
-
-		++ceiter;
-	}
-
-	double resx = (sumVpx + sumRingEx) / (sumVp + sumRingElow);
-	double resy = (sumVpy + sumRingEy) / (sumVp + sumRingElow);
-
-	if(sumVp+sumRingElow==0)		//如果分母为0就代表没变，直接复制
-	{
-		resx = v->point().x();
-		resy = v->point().y();
-	}
-
-	Point returnp(resx, resy);
-
-	return returnp;
-}
-
-double OTR::Getlamuda(Edge e, Point p)
-{
-	const Point ps = source_vertex(e)->point();
-	const Point pt = target_vertex(e)->point();
-	Segment seg(ps, pt);
-	Line le = seg.supporting_line();
-	Point project = le.projection(p);
-
-	double x1 = ps.x();
-	double x2 = pt.x();
-	double xp = project.x();
-	
-	if(abs(x2-x1)<0.001)		//x坐标相差太小的话精度可能较低，换y坐标
-	{
-		x1 = ps.y();
-		x2 = pt.y();
-		xp = project.y();
-	}
-
-	double res = (xp - x1) / (x2 - x1);
-
-
-	return res;
-}
-
-void OTR::MakeCollap(Edge& e)
-{
-	assin_points.push_back(source_vertex(e)->point());
-	while (!IsCollapsable(e))
-	{
-		FlipEdge(e);
-		block_edge.clear();
-	}
-	Edge t_edge = twin_edge(e);
-	tgl2.tds().join_vertices(t_edge.first, t_edge.second);
-
-	block_edge.clear();
-
-}
+//void OTR::ReLocate(vector<vertex_handle> ring,Point sp)
+//{
+//	int rvid = 0;
+//	vector<pair<vertex_handle,Point>> toMove;
+//	for (auto rvit=ring.begin();rvit!=ring.end();rvit++)
+//	{
+//
+//		if (IsBoderPoint((*rvit)->point()))			//跳过边界点
+//		{
+//			rvid++;
+//			continue;
+//		}
+//
+//		Point AfterRelocate = Relocatev(*rvit);
+//		vector<vertex_handle> one_ring_v = GetOneRingVertex(*rvit);
+//		if(PointIsInRing(one_ring_v, AfterRelocate))
+//		{
+//			(*rvit)->point() = AfterRelocate;		//移动点
+//		}
+//		rvid++;
+//	}
+//}
+//
+//bool OTR::PointIsInRing(vector<vertex_handle> ring, Point sp)
+//{
+//	bool isIn = true;
+//	for (int i = 0; i < ring.size(); ++i)
+//	{
+//		Point p1 = ring[i]->point();
+//		int nexti = (i + 1) % (int)ring.size();
+//		Point p2 = ring[nexti]->point();
+//		if(!compute_triangle_ccw_line(p1,p2,sp))
+//		{
+//			isIn = false;
+//			break;
+//		}
+//	}
+//	return isIn;
+//}
+//
+//Point OTR::Relocatev(vertex_handle v)
+//{
+//	auto vcit=vertex_points_map_temp.find(v);
+//
+//	double sumVpx = 0;
+//	double sumVpy = 0;
+//	int sumVp=0;
+//	if (vcit != vertex_points_map_temp.end())
+//	{
+//		_Cost v_cost = vcit->second;
+//		for (auto vcpit=v_cost.assined_points.begin();vcpit!=v_cost.assined_points.end();vcpit++)
+//		{
+//			sumVpx += vcpit->x();
+//			sumVpy += vcpit->y();
+//			sumVp++;
+//		}
+//	}
+//
+//	double sumRingEx = 0;
+//	double sumRingEy = 0;
+//	double sumRingElow = 0;
+//	auto ceiter = tgl2.incident_edges(v);
+//	
+//	for (int i = 0; i < v->degree(); ++i)
+//	{
+//		Edge curedge = *ceiter;
+//		if(source_vertex(curedge)!=v)		//确保方向是正确的
+//		{
+//			curedge = twin_edge(curedge);
+//		}
+//
+//		auto cemp_it = edge_points_map_temp.find(curedge);
+//		double bx = target_vertex(curedge)->point().x();
+//		double by= target_vertex(curedge)->point().y();
+//		if (cemp_it != edge_points_map_temp.end())
+//		{
+//			_Cost v_cost = cemp_it->second;					
+//			for (auto cepit = v_cost.assined_points.begin(); cepit != v_cost.assined_points.end(); cepit++)		//当前边的上的每个点
+//			{
+//				double lamuda = Getlamuda(curedge, *cepit);
+//				double pix = cepit->x();
+//				double piy = cepit->y();
+//				sumRingEx += (1 - lamuda) * (pix - lamuda * bx);
+//				sumRingEy += (1 - lamuda) * (piy - lamuda * by);
+//				sumRingElow += (1 - lamuda) * (1 - lamuda);
+//			}
+//		}
+//
+//		Edge ceitwin = twin_edge(curedge);						//在Map里可能存的是twin，所以也要找一遍
+//		auto cemp_it1 = edge_points_map_temp.find(ceitwin);		
+//		double bx1 = source_vertex(ceitwin)->point().x();		//反向的所以是source
+//		double by1 = source_vertex(ceitwin)->point().y();
+//		if (cemp_it1 != edge_points_map_temp.end())
+//		{
+//			_Cost v_cost = cemp_it1->second;
+//			for (auto cepit = v_cost.assined_points.begin(); cepit != v_cost.assined_points.end(); cepit++)		//当前边的上的每个点
+//			{
+//				double lamuda = Getlamuda(curedge, *cepit);
+//				double pix = cepit->x();
+//				double piy = cepit->y();
+//				sumRingEx += (1 - lamuda) * (pix - lamuda * bx1);
+//				sumRingEy += (1 - lamuda) * (piy - lamuda * by1);
+//				sumRingElow += (1 - lamuda) * (1 - lamuda);
+//			}
+//		}
+//
+//
+//		++ceiter;
+//	}
+//
+//	double resx = (sumVpx + sumRingEx) / (sumVp + sumRingElow);
+//	double resy = (sumVpy + sumRingEy) / (sumVp + sumRingElow);
+//
+//	if(sumVp+sumRingElow==0)		//如果分母为0就代表没变，直接复制
+//	{
+//		resx = v->point().x();
+//		resy = v->point().y();
+//	}
+//
+//	Point returnp(resx, resy);
+//
+//	return returnp;
+//}
+//
+//double OTR::Getlamuda(Edge e, Point p)
+//{
+//	const Point ps = source_vertex(e)->point();
+//	const Point pt = target_vertex(e)->point();
+//	Segment seg(ps, pt);
+//	Line le = seg.supporting_line();
+//	Point project = le.projection(p);
+//
+//	double x1 = ps.x();
+//	double x2 = pt.x();
+//	double xp = project.x();
+//	
+//	if(abs(x2-x1)<0.001)		//x坐标相差太小的话精度可能较低，换y坐标
+//	{
+//		x1 = ps.y();
+//		x2 = pt.y();
+//		xp = project.y();
+//	}
+//
+//	double res = (xp - x1) / (x2 - x1);
+//
+//
+//	return res;
+//}
+//
+//void OTR::MakeCollap(Edge& e)
+//{
+//	assin_points.push_back(source_vertex(e)->point());
+//	while (!IsCollapsable(e))
+//	{
+//		FlipEdge(e);
+//		block_edge.clear();
+//	}
+//	Edge t_edge = twin_edge(e);
+//	tgl2.tds().join_vertices(t_edge.first, t_edge.second);
+//
+//	block_edge.clear();
+//
+//}
 
 
 
