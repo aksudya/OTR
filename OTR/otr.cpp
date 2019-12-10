@@ -138,33 +138,7 @@ void OTR::InitPriQueue()
 }
 
 
-Edge OTR::FindEdgeInTgl2(Edge e)
-{
-	Point s1 = source_vertex(e)->point();
-	Point t1 = target_vertex(e)->point();
-	Edge re;
-	for (auto eiter2 = tgl2.finite_edges_begin(); eiter2 != tgl2.finite_edges_end(); eiter2++)
-	{
-		Point s2 = source_vertex(*eiter2)->point();
-		Point t2 = target_vertex(*eiter2)->point();
 
-		if (s1.x() == s2.x() && s1.y() == s2.y() && t1.x() == t2.x() && t1.y() == t2.y())
-		{
-			re=*eiter2;
-		}
-	}
-	for (auto eiter2 = tgl2.finite_edges_begin(); eiter2 != tgl2.finite_edges_end(); eiter2++)
-	{
-		Point s2 = target_vertex(*eiter2)->point();
-		Point t2 = source_vertex(*eiter2)->point();
-
-		if (s1.x() == s2.x() && s1.y() == s2.y() && t1.x() == t2.x() && t1.y() == t2.y())
-		{
-			re = twin_edge(*eiter2);
-		}
-	}
-	return re;
-}
 
 
 void OTR::PickAndCollap()

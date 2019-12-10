@@ -122,12 +122,10 @@ public:
 	Edge FindEdgeInTgl2(Edge e);
 
 	bool PointIsInRing(vector<vertex_handle> ring, Point sp);		//判断点sp是否在ring内
-	bool face_has_point(Point p, Face_handle f);	//判断点p是不是在f内
 	bool IsBoderEdge(Edge e);						//判断边e是否是边缘点
 	bool IsBoderPoint(Point p);						//判断点p是否是边缘点
 	bool PointEqual(Point a, Point b);				//判断点a与点b坐标是否相同
 
-	Edge find_nearest_edge(Face_handle f, Point p);		//找到面f里离p最近的边
 
 	vector<Point> GetOneRingVertex(Point v);	//获取tgl2中顶点v周围一圈的顶点
 
@@ -161,20 +159,7 @@ public:
 		return edge.first->vertex(tgl2.cw(edge.second));
 	}
 
-	Edge prev_edge(Edge& edge) 
-	{
-		Face_handle f = edge.first;
-		int index = tgl2.cw(edge.second);
-		return Edge(f, index);
-	}
-
-	Edge twin_edge(Edge& edge)
-	{
-		Face_handle f = edge.first;
-		vertex_handle v = source_vertex(edge);
-		Face_handle nf = f->neighbor(edge.second);
-		return Edge(nf, tgl2.ccw(nf->index(v)));
-	}
+	
 
 	Segment twin_edge(Segment& edge)
 	{

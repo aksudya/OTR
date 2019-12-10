@@ -2,7 +2,8 @@
 #include <CGAL/Exact_predicates_inexact_constructions_kernel.h>
 #include <CGAL/point_generators_2.h>
 #include <CGAL/Optimal_transportation_reconstruction_2.h>
-#include <CGAL/Point_set_2.h>
+#include <CGAL/Delaunay_triangulation_3.h>
+#include <CGAL/Point_set_3.h>
 #include <list>
 #include <CGAL/Polygon_2.h>
 #include <CGAL/Periodic_2_triangulation_2.h>
@@ -19,16 +20,15 @@ using namespace std;
 
 typedef CGAL::Exact_predicates_inexact_constructions_kernel K;
 
-typedef K::Point_2                                          Point;
-typedef CGAL::Delaunay_triangulation_2<K>					Delaunay;
-typedef CGAL::Triangulation_2<K>							Triangulation;
+typedef K::Point_3	                                        Point;
+typedef CGAL::Delaunay_triangulation_3<K>					Delaunay;
+typedef CGAL::Triangulation_3<K>							Triangulation;
 typedef Triangulation::Edge									Edge;
-typedef Triangulation::Face									Face;
-typedef Triangulation::Face_handle							Face_handle;
+
 typedef Triangulation::Vertex_handle						vertex_handle;
-typedef K::Segment_2										Segment;
+typedef K::Segment_3										Segment;
 typedef CGAL::Polygon_2<K>									Polygon_2;
-typedef K::Line_2											Line;
+typedef K::Line_3											Line;
 typedef pair<vertex_handle, vertex_handle>					vertex_pair;
 
 struct Segment_more {
