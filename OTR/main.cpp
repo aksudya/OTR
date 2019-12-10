@@ -10,7 +10,7 @@ void otr_extrat()
 
 	ifstream infile;
 
-	infile.open("skyline_noisy00.txt", ios::in);
+	infile.open("stair-noise00.txt", ios::in);
 	while (!infile.eof())           
 	{
 		double x, y;
@@ -28,8 +28,8 @@ void otr_extrat()
 
 	for (auto iter = points_1.begin(); iter != points_1.end(); iter++)
 	{
-		double xx = iter->hx() *500+100;
-		double yy = iter->hy() * 500 +100;
+		double xx = iter->hx() *500+150;
+		double yy = iter->hy() * 500 +150;
 		Point p(xx, yy);
 		points_re.push_back(p);
 	}
@@ -47,7 +47,7 @@ void lines_draw(double t)	//画tgl2中的线
 	//glClear(GL_COLOR_BUFFER_BIT);
 	glPushMatrix();
 	glColor3f(0.0, 1.0, t);
-	glLineWidth(3);
+	glLineWidth(2);
 	
 	int kk = 0;
 
@@ -168,7 +168,10 @@ void keybordClick(unsigned char key, int x, int y)
 	else if(key=='t')
 	{
 		a.CaculateAssinCost();
-		a.GetVaild();
+		a.GetVaild1();
+
+		a.vertex_points_map_temp.clear();
+		a.edge_points_map_temp.clear();
 		glClear(GL_COLOR_BUFFER_BIT);
 		glPushMatrix();
 		//a.PickAndCollap();

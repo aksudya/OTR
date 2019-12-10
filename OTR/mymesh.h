@@ -6,12 +6,14 @@
 #include <list>
 #include <CGAL/Polygon_2.h>
 #include <CGAL/Periodic_2_triangulation_2.h>
-#include <gl/GLUT.h>
+#include <GLUT.h>
 #include <iostream>
 #include <cmath>
 #include <random>
 #include <ctime>
 #include <fstream> 
+
+//#define METHED2
 
 using namespace std;
 

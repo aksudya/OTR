@@ -9,9 +9,9 @@ void OTR::Init(vector<Point> input)
 	points_input = input;
 	default_random_engine engine(1);
 	vector<bool> index(input.size(),false);
-	for (int i = 0; i < 0.14*input.size(); ++i)
+	uniform_int_distribution<int> ud(0, input.size() - 1);
+	for (int i = 0; i < 0.9*input.size(); ++i)
 	{
-		uniform_int_distribution<int> ud(0, input.size() - 1);
 		int id = ud(engine);
 		while (index[id])
 		{
@@ -49,7 +49,7 @@ void OTR::Init(vector<Point> input)
 
 	
 	
-	
+#ifdef METHED2
 	CaculateAssinCost();
 
 	for (int i = 0; i < 5; ++i)
@@ -71,6 +71,9 @@ void OTR::Init(vector<Point> input)
 
 	GetVaild();
 
+	vertex_points_map_temp.clear();
+	edge_points_map_temp.clear();
+#endif
 
 }
 
@@ -184,7 +187,8 @@ void OTR::PickAndCollap()
 	}
 	
 
-
+	//vertex_points_map_temp.clear();
+	//edge_points_map_temp.clear();
 	//GetVaild();
 
 	assin_points.clear();
@@ -246,6 +250,29 @@ void OTR::GetVaild()
 	{
 		Point ip = *ipit;
 		if(ms2.Vertexs.find(ip)==ms2.Vertexs.end())
+		{
+			assin_points.push_back(ip);
+		}
+	}
+}
+
+void OTR::GetVaild1()
+{
+	ms2.Clear();
+	assin_points.clear();
+	for (auto epmit = edge_points_map_temp.begin(); epmit != edge_points_map_temp.end(); ++epmit)
+	{
+		if (epmit->second.assined_points.size()>=10)
+		{
+			ms2.edges.insert(epmit->first);
+			ms2.Vertexs.insert(epmit->first.source());
+			ms2.Vertexs.insert(epmit->first.target());
+		}
+	}
+	for (auto ipit = points_input.begin(); ipit != points_input.end(); ++ipit)
+	{
+		Point ip = *ipit;
+		if (ms2.Vertexs.find(ip) == ms2.Vertexs.end())
 		{
 			assin_points.push_back(ip);
 		}

@@ -102,6 +102,8 @@ public:
 	void MakeCollap(Edge& e);	//合并边，合并后的结果在tgl2中
 	void PickAndCollap();		//	选取队列中第一条边合并
 	void GetVaild();			//获取有效边并更新ms2
+	void GetVaild1();			//获取有效边并更新ms2
+
 
 	double CaculateAssinCost();		//计算当前分配方案总代价
 	double CaculateEachEdgeCost();	//计算每条边的代价
