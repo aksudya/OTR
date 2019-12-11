@@ -39,7 +39,9 @@ void OTR::Init(vector<Point> input)
 
 	for (auto eit = delaunay_input.finite_edges_begin(); eit != delaunay_input.finite_edges_end(); ++eit)
 	{
-		Segment s(source_vertex(*eit)->point(), target_vertex(*eit)->point());
+		auto kk = *eit;
+		//kk.first->vertex(tgl2.ccw(kk.second));
+		Segment s(source_vertex(kk)->point(), target_vertex(kk)->point());
 		ms1.edges.insert(s);
 	}
 
@@ -670,79 +672,8 @@ void OTR::CaculateVertexCost(Segment e, _Cost& c)
 
 
 
-bool OTR::face_has_point(Point p, Face_handle f)
-{
-	if(tgl2.is_infinite(f))
-	{
-		return false;
-	}
-	for (int i = 0; i < 3; ++i) 
-	{
-		
-		Edge edge(f, i);
-		const Point ps = source_vertex(edge)->point();
-		const Point pt = target_vertex(edge)->point();
-		if (!compute_triangle_ccw(ps, pt, p))
-			return false;
-	}
-	return true;
-}
 
-bool OTR::IsBoderEdge(Edge e)
-{
-	double dl = (std::max)((bbox.xmax() - bbox.xmin()) / 2.,
-		(bbox.ymax() - bbox.ymin()) / 2.);
-	Point* p[4];
 
-	p[0]=new Point(bbox.xmin() - dl, bbox.ymin() - dl);
-	p[1]=new Point(bbox.xmin() - dl, bbox.ymax() + dl);
-	p[2]=new Point(bbox.xmax() + dl, bbox.ymax() + dl);
-	p[3]=new Point(bbox.xmax() + dl, bbox.ymin() - dl);
-
-	Point s = source_vertex(e)->point();
-	Point t = target_vertex(e)->point();
-
-	bool match = false;
-
-	for (int i = 0; i < 4; ++i)
-	{
-		if(PointEqual(s,*p[i])||PointEqual(t,*p[i]))
-		{
-			match = true;
-			break;
-		}
-	}
-
-	return match;
-}
-
-bool OTR::IsBoderPoint(Point point)
-{
-	double dl = (std::max)((bbox.xmax() - bbox.xmin()) / 2.,
-		(bbox.ymax() - bbox.ymin()) / 2.);
-	Point * p[4];
-
-	p[0] = new Point(bbox.xmin() - dl, bbox.ymin() - dl);
-	p[1] = new Point(bbox.xmin() - dl, bbox.ymax() + dl);
-	p[2] = new Point(bbox.xmax() + dl, bbox.ymax() + dl);
-	p[3] = new Point(bbox.xmax() + dl, bbox.ymin() - dl);
-
-	bool isBox = false;
-	for (int i = 0; i < 4; ++i)
-	{
-		if (PointEqual(point, *p[i]))
-		{
-			isBox = true;
-			break;
-		}
-	}
-	return isBox;
-}
-
-bool OTR::PointEqual(Point a, Point b)
-{
-	return abs(a.x()- b.x())<1e-9 && abs(a.y() - b.y())<1e-9;
-}
 
 
 
@@ -775,138 +706,5 @@ double OTR::get_p_to_edge(Point p, Segment e)
 	return dist;
 }
 
-bool OTR::IsCollapsable(Edge &e)
-{
-
-	vertex_handle start_p = source_vertex(e);
-	vertex_handle end_p = target_vertex(e);
-
-	auto cviter = tgl2.incident_vertices(start_p);
-	bool flag_collapsable = true;
-	
-	for (int i = 0; i < start_p->degree(); ++i)
-	{
-		auto temp = cviter;
-		temp++;
-
-		auto xj_a = cviter->point() - end_p->point();
-		auto a_b = temp->point() - cviter->point();
-
-		double cross_product = xj_a.x() * a_b.y() - xj_a.y() * a_b.x();
-
-		if(cross_product<-DBL_MIN)		//		顺时针
-		{
-			vertex_pair p(cviter, temp);
-			block_edge.push_back(p);
-			flag_collapsable = false;
-		}
-
-		cviter++;
-	}
 
 
-
-	return flag_collapsable;
-}
-
-void OTR::FlipEdge(Edge& e)
-{
-	Segment st(source_vertex(e)->point(), target_vertex(e)->point());
-
-	double max_dist = -1;
-	vertex_pair blocked_edge;
-	for (auto bit=block_edge.begin();bit!=block_edge.end();bit++)
-	{
-		Point ps = bit->first->point();
-		Point pt = bit->second->point();
-		Segment seg(ps, pt);
-		Line lst = st.supporting_line();
-		Line lab = seg.supporting_line();
-
-		auto result= intersection(lst, lab);
-		Point *ints_point;
-		if (result)
-		{
-			ints_point = boost::get<Point>(&*result);		//获取距交点长度
-		}
-		
-		double dist = sqrt(squared_distance(*ints_point, target_vertex(e)->point()));
-
-		if (dist > max_dist)
-		{
-			max_dist = dist;
-			blocked_edge = *bit;
-		}
-	}
-
-	vertex_handle bs = blocked_edge.first;
-	vertex_handle bt = blocked_edge.second;
-
-	auto evit= tgl2.incident_edges(source_vertex(e));
-
-	for (int i = 0; i < source_vertex(e)->degree(); ++i)
-	{
-		Edge ei = *evit;
-		if (source_vertex(ei) != source_vertex(e))
-		{
-			ei = twin_edge(ei);
-		}
-
-		if (target_vertex(ei) == bs)
-		{
-			
-			if (is_flippable(ei))
-			{
-				tgl2.tds().flip(ei.first, ei.second);
-				break;
-			}
-		}
-		if (target_vertex(ei) == bt)
-		{
-			if (is_flippable(ei))
-			{
-				tgl2.tds().flip(ei.first, ei.second);
-				break;
-			}		
-		}
-
-		evit++;
-	}
-
-}
-
-
-
-bool OTR::is_flippable(Edge& edge)
-{
-	vertex_handle vt = target_vertex(edge);
-	vertex_handle c = opposite_vertex(edge);
-	Edge tw_edge = twin_edge(edge);
-	vertex_handle a = opposite_vertex(tw_edge);
-
-
-
-	double xa = a->point().x();
-	double ya = a->point().y();
-
-	double xt = vt->point().x();
-	double yt = vt->point().y();
-
-	double xc = c->point().x();
-	double yc = c->point().y();
-
-	double atx, tcx,aty, tcy;
-
-	atx = xt - xa;
-	aty = yt - ya;
-	tcx = xc - xt;
-	tcy = yc - yt;
-
-
-
-	double cross_product = atx* tcy - aty * tcx;
-	
-
-	return cross_product>-DBL_MIN;
-
-}

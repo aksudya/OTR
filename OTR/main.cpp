@@ -10,27 +10,31 @@ void otr_extrat()
 
 	ifstream infile;
 
-	infile.open("stair-noise00.txt", ios::in);
+/*	infile.open("stair-noise00.txt", ios::in);
 	while (!infile.eof())           
 	{
-		double x, y;
-		infile >> x >>y;
-		Point p(x, y);
+		double x, y,z;
+		infile >> x >>y >>z;
+		Point p(x, y,z);
 		points_1.push_back(p);
 		
-	}											//读入xy文件
+	}	*/										//读入xy文件
 
-	//CGAL::Random rng(3);
-	////CGAL::Random_points_on_circle_2<Point> point_generator(1., rng);		//圆上
+	CGAL::Random rng(3);
+	Point aa(1, 1, 1);
+	Point bb(2, 2, 2);
+	CGAL::Random_points_on_segment_3<Point> point_generator(aa,bb,rng);			//正方形上
+	//CGAL::Random_points_on_circle_2<Point> point_generator(1., rng);		//圆上
 	//CGAL::Random_points_on_square_2<Point> point_generator(1., rng);			//正方形上
-	//////CGAL::Random_points_in_square_2<Point> point_generator(1., rng);		//正方形内
-	//CGAL::cpp11::copy_n(point_generator, 500, std::back_inserter(points_1));	//100为生成点的个数
+	////CGAL::Random_points_in_square_2<Point> point_generator(1., rng);		//正方形内
+	CGAL::cpp11::copy_n(point_generator, 500, std::back_inserter(points_1));	//100为生成点的个数
 
 	for (auto iter = points_1.begin(); iter != points_1.end(); iter++)
 	{
-		double xx = iter->hx() *500+150;
-		double yy = iter->hy() * 500 +150;
-		Point p(xx, yy);
+		double xx = iter->hx() *200+150;
+		double yy = iter->hy() * 200 +150;
+		double zz = iter->hy() * 200 + 150;
+		Point p(xx, yy,zz);
 		points_re.push_back(p);
 	}
 	

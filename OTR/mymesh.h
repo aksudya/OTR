@@ -1,13 +1,14 @@
 #pragma once
 #include <CGAL/Exact_predicates_inexact_constructions_kernel.h>
 #include <CGAL/point_generators_2.h>
-#include <CGAL/Optimal_transportation_reconstruction_2.h>
+//#include <CGAL/Optimal_transportation_reconstruction_2.h>
 #include <CGAL/Delaunay_triangulation_3.h>
 #include <CGAL/Point_set_3.h>
 #include <list>
 #include <CGAL/Polygon_2.h>
-#include <CGAL/Periodic_2_triangulation_2.h>
-#include <GLUT.h>
+#include <CGAL/Periodic_3_triangulation_3.h>
+#include <CGAL/point_generators_3.h>
+#include <gl/GLUT.h>
 #include <iostream>
 #include <cmath>
 #include <random>

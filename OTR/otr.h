@@ -149,12 +149,14 @@ public:
 		return cross_product > DBL_MIN;
 	}
 
-	vertex_handle source_vertex(Edge& edge)
+	template<typename T>
+	vertex_handle source_vertex(T edge)
 	{
 		return edge.first->vertex(tgl2.ccw(edge.second));
 	}
 
-	vertex_handle target_vertex(Edge& edge)
+	template<typename T>
+	vertex_handle target_vertex(T edge)
 	{
 		return edge.first->vertex(tgl2.cw(edge.second));
 	}
