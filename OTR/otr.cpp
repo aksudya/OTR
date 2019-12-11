@@ -10,7 +10,7 @@ void OTR::Init(vector<Point> input)
 	default_random_engine engine(1);
 	vector<bool> index(input.size(),false);
 	uniform_int_distribution<int> ud(0, input.size() - 1);
-	for (int i = 0; i < 0.9*input.size(); ++i)
+	for (int i = 0; i < 0.1*input.size(); ++i)
 	{
 		int id = ud(engine);
 		while (index[id])
@@ -39,9 +39,10 @@ void OTR::Init(vector<Point> input)
 
 	for (auto eit = delaunay_input.finite_edges_begin(); eit != delaunay_input.finite_edges_end(); ++eit)
 	{
-		auto kk = *eit;
-		//kk.first->vertex(tgl2.ccw(kk.second));
-		Segment s(source_vertex(kk)->point(), target_vertex(kk)->point());
+		
+		Point p1=eit->first->vertex(eit->second)->point();
+		Point p2 = eit->first->vertex(eit->third)->point();
+		Segment s(p1,p2);
 		ms1.edges.insert(s);
 	}
 
@@ -151,12 +152,24 @@ void OTR::PickAndCollap()
 
 	for (int i = 0; i < 1; ++i)
 	{
+		vector<Point> newps;
+		vector<Point> ppits;
+		int nump = 0;
 		for (auto pit = ms2.Vertexs.begin(); pit != ms2.Vertexs.end(); ++pit)
 		{
 			Point newp = Relocatev(*pit);
 			Point ppit = *pit;
-			applyRelocate(ppit, newp);
+			nump++;
+			newps.push_back(newp);
+			ppits.push_back(ppit);
 		}
+
+		for (int i = 0; i < nump; ++i)
+		{
+			applyRelocate(ppits[i], newps[i]);
+		}
+		
+		
 		vertex_points_map_temp.clear();
 		edge_points_map_temp.clear();
 		CaculateAssinCost();
@@ -301,6 +314,8 @@ Point OTR::Relocatev(Point v)
 
 	double sumVpx = 0;
 	double sumVpy = 0;
+	double sumVpz = 0;
+
 	int sumVp=0;
 	if (vcit != vertex_points_map_temp.end())
 	{
@@ -309,12 +324,14 @@ Point OTR::Relocatev(Point v)
 		{
 			sumVpx += vcpit->x();
 			sumVpy += vcpit->y();
+			sumVpz += vcpit->z();
 			sumVp++;
 		}
 	}
 
 	double sumRingEx = 0;
 	double sumRingEy = 0;
+	double sumRingEz = 0;
 	double sumRingElow = 0;
 	//auto ceiter = tgl2.incident_edges(v);
 
@@ -346,6 +363,7 @@ Point OTR::Relocatev(Point v)
 		auto cemp_it = edge_points_map_temp.find(curedge);
 		double bx = curedge.target().x();
 		double by= curedge.target().y();
+		double bz = curedge.target().z();
 		if (cemp_it != edge_points_map_temp.end())
 		{
 			_Cost v_cost = cemp_it->second;					
@@ -354,8 +372,10 @@ Point OTR::Relocatev(Point v)
 				double lamuda = Getlamuda(curedge, *cepit);
 				double pix = cepit->x();
 				double piy = cepit->y();
+				double piz = cepit->z();
 				sumRingEx += (1 - lamuda) * (pix - lamuda * bx);
 				sumRingEy += (1 - lamuda) * (piy - lamuda * by);
+				sumRingEz += (1 - lamuda) * (piz - lamuda * bz);
 				sumRingElow += (1 - lamuda) * (1 - lamuda);
 			}
 		}
@@ -364,6 +384,7 @@ Point OTR::Relocatev(Point v)
 		auto cemp_it1 = edge_points_map_temp.find(ceitwin);		
 		double bx1 = ceitwin.source().x();		//反向的所以是source
 		double by1 = ceitwin.source().y();
+		double bz1 = ceitwin.source().z();
 		if (cemp_it1 != edge_points_map_temp.end())
 		{
 			_Cost v_cost = cemp_it1->second;
@@ -372,8 +393,10 @@ Point OTR::Relocatev(Point v)
 				double lamuda = Getlamuda(curedge, *cepit);
 				double pix = cepit->x();
 				double piy = cepit->y();
+				double piz = cepit->z();
 				sumRingEx += (1 - lamuda) * (pix - lamuda * bx1);
 				sumRingEy += (1 - lamuda) * (piy - lamuda * by1);
+				sumRingEz += (1 - lamuda) * (piz - lamuda * bz1);
 				sumRingElow += (1 - lamuda) * (1 - lamuda);
 			}
 		}
@@ -384,14 +407,15 @@ Point OTR::Relocatev(Point v)
 
 	double resx = (sumVpx + sumRingEx) / (sumVp + sumRingElow);
 	double resy = (sumVpy + sumRingEy) / (sumVp + sumRingElow);
-
+	double resz = (sumVpz + sumRingEz) / (sumVp + sumRingElow);
 	if(sumVp+sumRingElow==0)		//如果分母为0就代表没变，直接复制
 	{
 		resx = v.x();
 		resy = v.y();
+		resz = v.z();
 	}
 
-	Point returnp(resx, resy);
+	Point returnp(resx, resy,resz);
 
 	return returnp;
 }
@@ -413,6 +437,12 @@ double OTR::Getlamuda(Segment e, Point p)
 		x1 = ps.y();
 		x2 = pt.y();
 		xp = project.y();
+		if(abs(x2 - x1) < 0.001)
+		{
+			x1 = ps.z();
+			x2 = pt.z();
+			xp = project.z();
+		}
 	}
 
 	double res = (xp - x1) / (x2 - x1);

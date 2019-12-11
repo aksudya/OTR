@@ -21,19 +21,29 @@ void otr_extrat()
 	}	*/										//读入xy文件
 
 	CGAL::Random rng(3);
-	Point aa(1, 1, 1);
-	Point bb(2, 2, 2);
-	CGAL::Random_points_on_segment_3<Point> point_generator(aa,bb,rng);			//正方形上
+	Point aa(-10, -10, 10);
+	Point bb(10, 10, 5);
+	Point cc(-10, 7, 7);
+	Point dd(10, 6, -10);
+	CGAL::Random_points_on_segment_3<Point> point_generator1(aa,bb,rng);			//正方形上
+	CGAL::Random_points_on_segment_3<Point> point_generator2(bb, cc, rng);			//正方形上
+	CGAL::Random_points_on_segment_3<Point> point_generator3(cc, dd, rng);			//正方形上
+	CGAL::Random_points_on_segment_3<Point> point_generator4(dd, aa, rng);			//正方形上
+	CGAL::Random_points_on_segment_3<Point> point_generator5(bb, dd, rng);			//正方形上
 	//CGAL::Random_points_on_circle_2<Point> point_generator(1., rng);		//圆上
 	//CGAL::Random_points_on_square_2<Point> point_generator(1., rng);			//正方形上
 	////CGAL::Random_points_in_square_2<Point> point_generator(1., rng);		//正方形内
-	CGAL::cpp11::copy_n(point_generator, 500, std::back_inserter(points_1));	//100为生成点的个数
+	CGAL::cpp11::copy_n(point_generator1, 100, std::back_inserter(points_1));	//100为生成点的个数
+	CGAL::cpp11::copy_n(point_generator2, 100, std::back_inserter(points_1));	//100为生成点的个数
+	CGAL::cpp11::copy_n(point_generator3, 100, std::back_inserter(points_1));	//100为生成点的个数
+	CGAL::cpp11::copy_n(point_generator4, 100, std::back_inserter(points_1));	//100为生成点的个数
+	CGAL::cpp11::copy_n(point_generator5, 100, std::back_inserter(points_1));	//100为生成点的个数
 
 	for (auto iter = points_1.begin(); iter != points_1.end(); iter++)
 	{
-		double xx = iter->hx() *200+150;
-		double yy = iter->hy() * 200 +150;
-		double zz = iter->hy() * 200 + 150;
+		double xx = iter->hx() *3+0;
+		double yy = iter->hy() * 3 +0;
+		double zz = iter->hy() * 3 + 0;
 		Point p(xx, yy,zz);
 		points_re.push_back(p);
 	}
@@ -42,7 +52,7 @@ void otr_extrat()
 	a.Init(points_re);
 	//a.CaculateAssinCost();
 	//a.GetVaild();
-	
+	cout << "finish" << endl;
 }
 
 void lines_draw(double t)	//画tgl2中的线
@@ -64,8 +74,8 @@ void lines_draw(double t)	//画tgl2中的线
 	{
 
 
-		glVertex2f(eit->source().x(),eit->source().y());
-		glVertex2f(eit->target().x(), eit->target().y());
+		glVertex3f(eit->source().x(),eit->source().y(), eit->source().z());
+		glVertex3f(eit->target().x(), eit->target().y(), eit->target().z());
 
 
 	}
@@ -90,7 +100,7 @@ void points_draw_dt(double t)	//绘制三角网格上的点(tgl2)
 	glBegin(GL_POINTS);
 	for (auto iter = a.ms2.Vertexs.begin(); iter != a.ms2.Vertexs.end(); iter++)
 	{
-		glVertex2f(iter->x(), iter->y());
+		glVertex3f(iter->x(), iter->y(),iter->z());
 	}
 		
 	glEnd();
@@ -107,7 +117,7 @@ void points_draw(double t)	//绘制生成的原始点
 	glPointSize(3);
 	glBegin(GL_POINTS);
 	for (iter = points_re.begin(); iter != points_re.end(); iter++)
-		glVertex2f(iter->hx(), iter->hy());
+		glVertex3f(iter->hx(), iter->hy(),iter->hz());
 	glEnd();
 	glPopMatrix();
 	//glutSwapBuffers();
@@ -126,7 +136,7 @@ void assin_draw()		//绘制所有被分配到顶点的点
 		_Cost cost = iter->second;
 		for (auto pit=cost.assined_points.begin();pit!=cost.assined_points.end();pit++)
 		{
-			glVertex2f(pit->x(),pit->y());
+			glVertex3f(pit->x(),pit->y(), pit->z());
 		}
 		
 	}
@@ -202,7 +212,7 @@ void reshape(int w, int h)
 	glViewport(0, 0, w, h);
 	glMatrixMode(GL_PROJECTION);
 	glLoadIdentity();
-	glOrtho(0, w, 0, h, -1.0, 1.0);
+	glOrtho(-100.0f, 100.0f, -100.0f, 100.0f, -100.0f, 100.0f);
 	glMatrixMode(GL_MODELVIEW);
 	glLoadIdentity();
 }
@@ -219,6 +229,7 @@ int main(int argc, char** argv)
 	glutCreateWindow("Lloyd");
 	init();
 	glutDisplayFunc(display);
+	glOrtho(-100.0f, 100.0f, -100.0f, 100.0f, -100.0f, 100.0f);
 	glutReshapeFunc(reshape);
 	glutKeyboardFunc(keybordClick);
 	glutMainLoop();

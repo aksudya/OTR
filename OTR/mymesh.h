@@ -3,6 +3,7 @@
 #include <CGAL/point_generators_2.h>
 //#include <CGAL/Optimal_transportation_reconstruction_2.h>
 #include <CGAL/Delaunay_triangulation_3.h>
+#include <queue>
 #include <CGAL/Point_set_3.h>
 #include <list>
 #include <CGAL/Polygon_2.h>
@@ -14,7 +15,12 @@
 #include <random>
 #include <ctime>
 #include <fstream> 
-
+#include <CGAL/Simple_cartesian.h>
+#include <CGAL/point_generators_3.h>
+#include <CGAL/Orthogonal_k_neighbor_search.h>
+#include <CGAL/Search_traits_3.h>
+#include <list>
+#include <cmath>
 //#define METHED2
 
 using namespace std;
@@ -31,6 +37,11 @@ typedef K::Segment_3										Segment;
 typedef CGAL::Polygon_2<K>									Polygon_2;
 typedef K::Line_3											Line;
 typedef pair<vertex_handle, vertex_handle>					vertex_pair;
+
+typedef CGAL::Search_traits_3<K> TreeTraits;
+typedef CGAL::Orthogonal_k_neighbor_search<TreeTraits> Neighbor_search;
+typedef Neighbor_search::Tree Tree;
+
 
 struct Segment_more {
 	bool operator()(const Segment& s1, const Segment& s2) const

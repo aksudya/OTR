@@ -14,9 +14,17 @@ mymesh::~mymesh()
 
 Point mymesh::FindNearestVertex(Point& p)
 {
-	CGAL::Point_set_3<K> PSet;
-	PSet.insert(Vertexs.begin(), Vertexs.end());
-	Point re = PSet.nearest_neighbor(p)->point();
+
+	Tree tree(Vertexs.begin(), Vertexs.end());
+
+	//Point aa = p;
+	Neighbor_search search(tree, p, 1);
+	Point re;
+	for (Neighbor_search::iterator it = search.begin(); it != search.end(); ++it)
+	{
+		re = it->first;
+	}
+	
 	return re;
 }
 
