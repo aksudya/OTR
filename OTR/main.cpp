@@ -10,7 +10,7 @@ void otr_extrat()
 
 	ifstream infile;
 
-	infile.open("stair-noise00.txt", ios::in);
+	infile.open("Shape03.txt", ios::in);
 	while (!infile.eof())           
 	{
 		double x, y;
@@ -28,8 +28,8 @@ void otr_extrat()
 
 	for (auto iter = points_1.begin(); iter != points_1.end(); iter++)
 	{
-		double xx = iter->hx() *500+150;
-		double yy = iter->hy() * 500 +150;
+		double xx = iter->hx() *4+50;
+		double yy = iter->hy() * 4 +20;
 		Point p(xx, yy);
 		points_re.push_back(p);
 	}
@@ -168,7 +168,7 @@ void keybordClick(unsigned char key, int x, int y)
 	else if(key=='t')
 	{
 		a.CaculateAssinCost();
-		a.GetVaild1();
+		a.GetVaild();
 
 		a.vertex_points_map_temp.clear();
 		a.edge_points_map_temp.clear();
