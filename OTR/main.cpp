@@ -28,24 +28,26 @@ void otr_extrat()
 		
 	}	*/										//读入xy文件
 
-	CGAL::Random rng(3);
-	Point aa(-10, -10, -20);
-	Point bb(10, 10, 5);
-	Point cc(-10, 7, 7);
-	Point dd(8, 6, -13);
+	CGAL::Random rng(5);
+	Point aa(-10, -10, -10);
+	Point bb(10, 10, 10);
+	Point cc(-10, 10, 10);
+	Point dd(-10, 10, -10);
 	CGAL::Random_points_on_segment_3<Point> point_generator1(aa,bb,rng);			//正方形上
 	CGAL::Random_points_on_segment_3<Point> point_generator2(bb, cc, rng);			//正方形上
 	CGAL::Random_points_on_segment_3<Point> point_generator3(cc, dd, rng);			//正方形上
 	CGAL::Random_points_on_segment_3<Point> point_generator4(dd, aa, rng);			//正方形上
 	CGAL::Random_points_on_segment_3<Point> point_generator5(bb, dd, rng);			//正方形上
+	CGAL::Random_points_on_segment_3<Point> point_generator6(aa, cc, rng);			//正方形上
 	//CGAL::Random_points_on_circle_2<Point> point_generator(1., rng);		//圆上
 	//CGAL::Random_points_on_square_2<Point> point_generator(1., rng);			//正方形上
 	////CGAL::Random_points_in_square_2<Point> point_generator(1., rng);		//正方形内
-	CGAL::cpp11::copy_n(point_generator1, 100, std::back_inserter(points_1));	//100为生成点的个数
-	CGAL::cpp11::copy_n(point_generator2, 100, std::back_inserter(points_1));	//100为生成点的个数
-	CGAL::cpp11::copy_n(point_generator3, 100, std::back_inserter(points_1));	//100为生成点的个数
-	CGAL::cpp11::copy_n(point_generator4, 100, std::back_inserter(points_1));	//100为生成点的个数
-	CGAL::cpp11::copy_n(point_generator5, 100, std::back_inserter(points_1));	//100为生成点的个数
+	CGAL::cpp11::copy_n(point_generator1, 50, std::back_inserter(points_1));	//100为生成点的个数
+	CGAL::cpp11::copy_n(point_generator2, 50, std::back_inserter(points_1));	//100为生成点的个数
+	CGAL::cpp11::copy_n(point_generator3, 50, std::back_inserter(points_1));	//100为生成点的个数
+	CGAL::cpp11::copy_n(point_generator4, 50, std::back_inserter(points_1));	//100为生成点的个数
+	CGAL::cpp11::copy_n(point_generator5, 50, std::back_inserter(points_1));	//100为生成点的个数
+	CGAL::cpp11::copy_n(point_generator6, 50, std::back_inserter(points_1));	//100为生成点的个数
 
 	for (auto iter = points_1.begin(); iter != points_1.end(); iter++)
 	{
@@ -191,7 +193,7 @@ void display(void)
 
 	//glClear(GL_COLOR_BUFFER_BIT);
 	
-	points_draw_dt(0.5);
+	points_draw_dt(1);
 	points_draw(0.5);
 	//assin_draw();
 
@@ -270,8 +272,8 @@ void mouseMove(int x, int y)
 	/* rotation*/
 	if (mouseButton == GLUT_LEFT_BUTTON)
 	{
-		theta[0] += (y - mousePositionY0) * 0.008;
-		theta[1] += (x - mousePositionX0) * 0.008;
+		theta[0] += (y - mousePositionY0) * 0.05;
+		theta[1] += (x - mousePositionX0) * 0.05;
 
 
 	}
@@ -279,14 +281,14 @@ void mouseMove(int x, int y)
 	/*xy translation */
 	if (mouseButton == GLUT_MIDDLE_BUTTON)
 	{
-		place[0] += (x - mousePositionX0) * 0.002;
-		place[1] += (y - mousePositionY0) * 0.002;
+		place[0] += (x - mousePositionX0) * 0.05;
+		place[1] += (y - mousePositionY0) * 0.05;
 	}
 
 	/* zoom in and out */
 	if (mouseButton == GLUT_RIGHT_BUTTON)
 	{
-		place[2] += (x - mousePositionX0) * 0.002;
+		place[2] += (x - mousePositionX0) * 0.05;
 	}
 	mousePositionX0 = x;
 	mousePositionY0 = y;
