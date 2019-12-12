@@ -5,6 +5,14 @@ OTR a;
 std::vector<Point> points_1;
 std::vector<Point> points_re;
 
+static GLfloat place[] = { 0.0, 0.0, 0.0 };
+static GLfloat theta[] = { 0.0, 0.0, 0.0 };;
+static GLdouble viewer[] = { 0.0, 0.0, 3.0 };
+
+int mousePositionX0 = 0, mousePositionY0 = 0;
+int mouseButton = 0;
+
+
 void otr_extrat()
 {
 
@@ -21,10 +29,10 @@ void otr_extrat()
 	}	*/										//读入xy文件
 
 	CGAL::Random rng(3);
-	Point aa(-10, -10, 10);
+	Point aa(-10, -10, -20);
 	Point bb(10, 10, 5);
 	Point cc(-10, 7, 7);
-	Point dd(10, 6, -10);
+	Point dd(8, 6, -13);
 	CGAL::Random_points_on_segment_3<Point> point_generator1(aa,bb,rng);			//正方形上
 	CGAL::Random_points_on_segment_3<Point> point_generator2(bb, cc, rng);			//正方形上
 	CGAL::Random_points_on_segment_3<Point> point_generator3(cc, dd, rng);			//正方形上
@@ -43,7 +51,7 @@ void otr_extrat()
 	{
 		double xx = iter->hx() *3+0;
 		double yy = iter->hy() * 3 +0;
-		double zz = iter->hy() * 3 + 0;
+		double zz = iter->hz() * 3 + 0;
 		Point p(xx, yy,zz);
 		points_re.push_back(p);
 	}
@@ -146,13 +154,47 @@ void assin_draw()		//绘制所有被分配到顶点的点
 
 void display(void)
 {
+
+	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+	/* Update viewer position in modelview matrix */
+
+	glLoadIdentity();
+	gluLookAt(viewer[0], viewer[1], viewer[2], 0.0, 0.0, 0.0, 0.0, 1.0, 0.0);
+
+	/* rotate cube */
+
+	glTranslatef(place[0], 0.0, 0.0);
+	glTranslatef(0.0, place[1], 0.0);
+	glTranslatef(0.0, 0.0, place[2]);
+
+	glRotatef(theta[0], 1.0, 0.0, 0.0);
+	glRotatef(theta[1], 0.0, 1.0, 0.0);
+	glRotatef(theta[2], 0.0, 0.0, 1.0);
+
+
+	//colorcube();
+
+	//glFlush();
+	//glutSwapBuffers();
+
+
+	////glClear(GL_COLOR_BUFFER_BIT);
+	//////RandomInit(NumSeed);
+	////glTranslatef(place[0], 0.0, 0.0);
+	////glTranslatef(0.0, place[1], 0.0);
+	////glTranslatef(0.0, 0.0, place[2]);
+
+	////glRotatef(theta[0], 1.0, 0.0, 0.0);
+	////glRotatef(theta[1], 0.0, 1.0, 0.0);
+	////glRotatef(theta[2], 0.0, 0.0, 1.0);
+
 	//glClear(GL_COLOR_BUFFER_BIT);
-	//RandomInit(NumSeed);
-	glClear(GL_COLOR_BUFFER_BIT);
 	
 	points_draw_dt(0.5);
 	points_draw(0.5);
 	//assin_draw();
+
 
 	//a.InitPriQueue();
 	//a.PickAndCollap();
@@ -201,8 +243,13 @@ void keybordClick(unsigned char key, int x, int y)
 
 void init(void)
 {
-	glClearColor(0.0, 0.0, 0.0, 0);
-	glShadeModel(GL_FLAT);
+	//glEnable(GL_CULL_FACE);
+	glEnable(GL_DEPTH_TEST);
+	//glEnable(GL_LIGHTING);
+	//glEnable(GL_COLOR_MATERIAL);
+
+
+	//glColorMaterial(GL_FRONT, GL_AMBIENT_AND_DIFFUSE);
 }
 
 void reshape(int w, int h)
@@ -217,13 +264,56 @@ void reshape(int w, int h)
 	glLoadIdentity();
 }
 
+void mouseMove(int x, int y)
+{
+	//double movingScale = axislen / win_height;  // just a scaling factor to make the mouse moving not too sensitive
+	/* rotation*/
+	if (mouseButton == GLUT_LEFT_BUTTON)
+	{
+		theta[0] += (y - mousePositionY0) * 0.008;
+		theta[1] += (x - mousePositionX0) * 0.008;
+
+
+	}
+
+	/*xy translation */
+	if (mouseButton == GLUT_MIDDLE_BUTTON)
+	{
+		place[0] += (x - mousePositionX0) * 0.002;
+		place[1] += (y - mousePositionY0) * 0.002;
+	}
+
+	/* zoom in and out */
+	if (mouseButton == GLUT_RIGHT_BUTTON)
+	{
+		place[2] += (x - mousePositionX0) * 0.002;
+	}
+	mousePositionX0 = x;
+	mousePositionY0 = y;
+	glutPostRedisplay();
+}
+
+void mouseClick(int button, int state, int x, int y)
+{
+	if (button == GLUT_LEFT_BUTTON && state == GLUT_DOWN)
+		mouseButton = GLUT_LEFT_BUTTON;
+	else if (button == GLUT_MIDDLE_BUTTON && state == GLUT_DOWN)
+		mouseButton = GLUT_MIDDLE_BUTTON;
+	else if (button == GLUT_RIGHT_BUTTON && state == GLUT_DOWN)
+		mouseButton = GLUT_RIGHT_BUTTON;
+
+	mousePositionX0 = x;
+	mousePositionY0 = y;
+	return;
+}
+
 int main(int argc, char** argv)
 {
 	//border = Polygon_exact(Border_p.begin(), Border_p.end());
 	//PrintHelp();
 	otr_extrat();
 	glutInit(&argc, argv);
-	glutInitDisplayMode(GLUT_DOUBLE | GLUT_RGB);
+	glutInitDisplayMode(GLUT_RGB | GLUT_DOUBLE | GLUT_DEPTH);
 	glutInitWindowSize(800, 800);
 	glutInitWindowPosition(100, 100);
 	glutCreateWindow("Lloyd");
@@ -232,6 +322,8 @@ int main(int argc, char** argv)
 	glOrtho(-100.0f, 100.0f, -100.0f, 100.0f, -100.0f, 100.0f);
 	glutReshapeFunc(reshape);
 	glutKeyboardFunc(keybordClick);
+	glutMouseFunc(mouseClick);
+	glutMotionFunc(mouseMove);
 	glutMainLoop();
 	return 0;
 }
