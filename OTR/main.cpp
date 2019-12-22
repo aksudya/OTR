@@ -10,7 +10,7 @@ void otr_extrat()
 
 	ifstream infile;
 
-	infile.open("Shape03.txt", ios::in);
+	infile.open("skyline_noisy00.txt", ios::in);
 	while (!infile.eof())           
 	{
 		double x, y;
@@ -28,8 +28,8 @@ void otr_extrat()
 
 	for (auto iter = points_1.begin(); iter != points_1.end(); iter++)
 	{
-		double xx = iter->hx() *4+50;
-		double yy = iter->hy() * 4 +20;
+		double xx = iter->hx() *400+200;
+		double yy = iter->hy() * 400 +200;
 		Point p(xx, yy);
 		points_re.push_back(p);
 	}
