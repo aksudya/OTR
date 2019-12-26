@@ -18,7 +18,7 @@ void otr_extrat()
 
 	ifstream infile;
 
-/*	infile.open("stair-noise00.txt", ios::in);
+	infile.open("points_on_edges.xyz", ios::in);
 	while (!infile.eof())           
 	{
 		double x, y,z;
@@ -26,34 +26,34 @@ void otr_extrat()
 		Point p(x, y,z);
 		points_1.push_back(p);
 		
-	}	*/										//读入xy文件
+	}											//读入xy文件
 
-	CGAL::Random rng(5);
-	Point aa(-10, -10, -10);
-	Point bb(10, 10, 10);
-	Point cc(-10, 10, 10);
-	Point dd(-10, 10, -10);
-	CGAL::Random_points_on_segment_3<Point> point_generator1(aa,bb,rng);			//正方形上
-	CGAL::Random_points_on_segment_3<Point> point_generator2(bb, cc, rng);			//正方形上
-	CGAL::Random_points_on_segment_3<Point> point_generator3(cc, dd, rng);			//正方形上
-	CGAL::Random_points_on_segment_3<Point> point_generator4(dd, aa, rng);			//正方形上
-	CGAL::Random_points_on_segment_3<Point> point_generator5(bb, dd, rng);			//正方形上
-	CGAL::Random_points_on_segment_3<Point> point_generator6(aa, cc, rng);			//正方形上
-	//CGAL::Random_points_on_circle_2<Point> point_generator(1., rng);		//圆上
-	//CGAL::Random_points_on_square_2<Point> point_generator(1., rng);			//正方形上
-	////CGAL::Random_points_in_square_2<Point> point_generator(1., rng);		//正方形内
-	CGAL::cpp11::copy_n(point_generator1, 50, std::back_inserter(points_1));	//100为生成点的个数
-	CGAL::cpp11::copy_n(point_generator2, 50, std::back_inserter(points_1));	//100为生成点的个数
-	CGAL::cpp11::copy_n(point_generator3, 50, std::back_inserter(points_1));	//100为生成点的个数
-	CGAL::cpp11::copy_n(point_generator4, 50, std::back_inserter(points_1));	//100为生成点的个数
-	CGAL::cpp11::copy_n(point_generator5, 50, std::back_inserter(points_1));	//100为生成点的个数
-	CGAL::cpp11::copy_n(point_generator6, 50, std::back_inserter(points_1));	//100为生成点的个数
+	//CGAL::Random rng(5);
+	//Point aa(-10, -10, -10);
+	//Point bb(10, 10, 10);
+	//Point cc(-10, 10, 10);
+	//Point dd(-10, 10, -10);
+	//CGAL::Random_points_on_segment_3<Point> point_generator1(aa,bb,rng);			//正方形上
+	//CGAL::Random_points_on_segment_3<Point> point_generator2(bb, cc, rng);			//正方形上
+	//CGAL::Random_points_on_segment_3<Point> point_generator3(cc, dd, rng);			//正方形上
+	//CGAL::Random_points_on_segment_3<Point> point_generator4(dd, aa, rng);			//正方形上
+	//CGAL::Random_points_on_segment_3<Point> point_generator5(bb, dd, rng);			//正方形上
+	//CGAL::Random_points_on_segment_3<Point> point_generator6(aa, cc, rng);			//正方形上
+	////CGAL::Random_points_on_circle_2<Point> point_generator(1., rng);		//圆上
+	////CGAL::Random_points_on_square_2<Point> point_generator(1., rng);			//正方形上
+	//////CGAL::Random_points_in_square_2<Point> point_generator(1., rng);		//正方形内
+	//CGAL::cpp11::copy_n(point_generator1, 50, std::back_inserter(points_1));	//100为生成点的个数
+	//CGAL::cpp11::copy_n(point_generator2, 50, std::back_inserter(points_1));	//100为生成点的个数
+	//CGAL::cpp11::copy_n(point_generator3, 50, std::back_inserter(points_1));	//100为生成点的个数
+	//CGAL::cpp11::copy_n(point_generator4, 50, std::back_inserter(points_1));	//100为生成点的个数
+	//CGAL::cpp11::copy_n(point_generator5, 50, std::back_inserter(points_1));	//100为生成点的个数
+	//CGAL::cpp11::copy_n(point_generator6, 50, std::back_inserter(points_1));	//100为生成点的个数
 
 	for (auto iter = points_1.begin(); iter != points_1.end(); iter++)
 	{
-		double xx = iter->hx() *3+0;
-		double yy = iter->hy() * 3 +0;
-		double zz = iter->hz() * 3 + 0;
+		double xx = iter->hx() *8-40;
+		double yy = iter->hy() * 8 - 40;
+		double zz = iter->hz() * 8 - 40;
 		Point p(xx, yy,zz);
 		points_re.push_back(p);
 	}
