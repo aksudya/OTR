@@ -10,7 +10,7 @@ void OTR::Init(vector<Point> input)
 	default_random_engine engine(1);
 	vector<bool> index(input.size(),false);
 	uniform_int_distribution<int> ud(0, input.size() - 1);
-	for (int i = 0; i < 0.1*input.size(); ++i)
+	for (int i = 0; i < 0.2*input.size(); ++i)
 	{
 		int id = ud(engine);
 		while (index[id])

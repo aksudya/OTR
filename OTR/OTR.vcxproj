@@ -87,9 +87,9 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <LinkIncremental>false</LinkIncremental>
     <ExecutablePath>C:\dev\CGAL-4.13.1\build\bin;C:\dev\CGAL-4.13.1\auxiliary\gmp\lib;$(ExecutablePath)</ExecutablePath>
-    <IncludePath>C:\dev\CGAL-4.13.1\build\include;C:\dev\CGAL-4.13.1\include;C:\dev\CGAL-4.13.1\auxiliary\gmp\include;C:\boost\boost_1_71_0;$(IncludePath)</IncludePath>
-    <ReferencePath>C:\boost\boost_1_71_0\stage\lib;C:\dev\CGAL-4.13.1\auxiliary\gmp\lib;C:\dev\CGAL-4.13.1\build\lib;$(ReferencePath)</ReferencePath>
-    <LibraryPath>C:\dev\CGAL-4.13.1\build\lib;C:\dev\CGAL-4.13.1\auxiliary\gmp\lib;$(LibraryPath)</LibraryPath>
+    <IncludePath>C:\dev\CGAL-4.13.1\build\include;C:\dev\CGAL-4.13.1\include;C:\dev\CGAL-4.13.1\auxiliary\gmp\include;C:\boost\boost_1_71_0;C:\dev\OSG\include;$(IncludePath)</IncludePath>
+    <ReferencePath>C:\boost\boost_1_71_0\stage\lib;C:\dev\CGAL-4.13.1\auxiliary\gmp\lib;C:\dev\CGAL-4.13.1\build\lib;C:\dev\OSG\lib;$(ReferencePath)</ReferencePath>
+    <LibraryPath>C:\dev\CGAL-4.13.1\build\lib;C:\dev\CGAL-4.13.1\auxiliary\gmp\lib;C:\dev\OSG\lib;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
@@ -152,15 +152,16 @@
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <SDLCheck>false</SDLCheck>
       <PreprocessorDefinitions>NDEBUG;_CONSOLE;CGAL_HEADER_ONLY;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <ConformanceMode>true</ConformanceMode>
+      <ConformanceMode>false</ConformanceMode>
       <BufferSecurityCheck>false</BufferSecurityCheck>
+      <OpenMPSupport>true</OpenMPSupport>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalDependencies>%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>OpenThreads.lib;osg.lib;osgDB.lib;osgUtil.lib;osgGA.lib;osgViewer.lib;osgText.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>

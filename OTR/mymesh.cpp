@@ -32,8 +32,17 @@ Segment mymesh::FindNearestEdge(Point& p)
 {
 	double min = DBL_MAX;
 	Segment re;
-	for (auto eit=edges.begin();eit!=edges.end();++eit)
+	vector<set<Segment, Segment_more>::iterator> eitstore;
+
+
+	for (auto eit = edges.begin(); eit != edges.end(); ++eit)
 	{
+		eitstore.push_back(eit);
+	}
+#pragma omp parallel for
+	for (int i=0;i<eitstore.size();i++)
+	{
+		auto eit = eitstore[i];
 		Segment s = *eit;
 		double dis = squared_distance(p,s);
 		if(dis<min)

@@ -21,6 +21,15 @@
 #include <CGAL/Search_traits_3.h>
 #include <list>
 #include <cmath>
+#include <Windows.h>
+#include <osgViewer/Viewer>
+#include <osgViewer/ViewerEventHandlers>
+#include <osgGA/StateSetManipulator>
+#include <osgUtil/Optimizer>
+#include <osg/Point>
+#include <osg/LineWidth>
+#include<osgDB\ReadFile>
+#include<osg\Node>
 //#define METHED2
 
 using namespace std;

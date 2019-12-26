@@ -4,15 +4,13 @@
 OTR a;
 std::vector<Point> points_1;
 std::vector<Point> points_re;
-
-static GLfloat place[] = { 0.0, 0.0, 0.0 };
-static GLfloat theta[] = { 0.0, 0.0, 0.0 };;
-static GLdouble viewer[] = { 0.0, 0.0, 3.0 };
-
-int mousePositionX0 = 0, mousePositionY0 = 0;
-int mouseButton = 0;
-
-
+osg::ref_ptr<osg::Group> root = new osg::Group();
+osg::ref_ptr<osgViewer::Viewer> viewer = new osgViewer::Viewer;
+osg::ref_ptr<osg::Geometry> geometry_points_1 = new osg::Geometry();
+osg::ref_ptr<osg::Geometry> geometry_points_result = new osg::Geometry();
+osg::ref_ptr<osg::Geometry> geometry_lines = new osg::Geometry();
+osg::ref_ptr<osg::Geode> line_node = new osg::Geode();
+osg::ref_ptr<osg::Geode> points_node = new osg::Geode();
 void otr_extrat()
 {
 
@@ -48,284 +46,154 @@ void otr_extrat()
 	//CGAL::cpp11::copy_n(point_generator4, 50, std::back_inserter(points_1));	//100为生成点的个数
 	//CGAL::cpp11::copy_n(point_generator5, 50, std::back_inserter(points_1));	//100为生成点的个数
 	//CGAL::cpp11::copy_n(point_generator6, 50, std::back_inserter(points_1));	//100为生成点的个数
-
+	osg::ref_ptr<osg::Vec3Array> coords = new osg::Vec3Array();
+	osg::ref_ptr<osg::Vec4Array> color = new osg::Vec4Array();
 	for (auto iter = points_1.begin(); iter != points_1.end(); iter++)
 	{
-		double xx = iter->hx() *8-40;
+		double xx = iter->hx() * 8 - 40;
 		double yy = iter->hy() * 8 - 40;
 		double zz = iter->hz() * 8 - 40;
 		Point p(xx, yy,zz);
 		points_re.push_back(p);
+		coords->push_back(osg::Vec3(p[0], p[1], p[2]));
+		color->push_back(osg::Vec4(1, 1, 0, 1.0f));
 	}
-	
+	geometry_points_1->setVertexArray(coords.get());
+	geometry_points_1->setColorArray(color.get());
+	geometry_points_1->setColorBinding(osg::Geometry::BIND_PER_VERTEX);
+	geometry_points_1->addPrimitiveSet(new osg::DrawArrays(osg::PrimitiveSet::POINTS, 0, points_re.size()));
 	//OTR a;
+
+
+
 	a.Init(points_re);
 	//a.CaculateAssinCost();
 	//a.GetVaild();
 	cout << "finish" << endl;
 }
 
-void lines_draw(double t)	//画tgl2中的线
+
+
+
+
+void refreashLines()
 {
-
-	//glClear(GL_COLOR_BUFFER_BIT);
-	glPushMatrix();
-	glColor3f(0.0, 1.0, t);
-	glLineWidth(2);
-	
-	int kk = 0;
-
-
-	glColor3f(1, 1, 1);
-	glBegin(GL_LINES);
-	//Delaunay dt = a.delaunay_temp;
-
+	geometry_lines = new osg::Geometry();
+	osg::ref_ptr<osg::Vec3Array> vertexArray = new osg::Vec3Array;
+	int numlines = 0;
 	for (auto eit = a.ms2.edges.begin(); eit != a.ms2.edges.end(); eit++)
 	{
 
-
-		glVertex3f(eit->source().x(),eit->source().y(), eit->source().z());
-		glVertex3f(eit->target().x(), eit->target().y(), eit->target().z());
-
-
+		osg::Vec3 a(eit->source().x(), eit->source().y(), eit->source().z());
+		osg::Vec3 b(eit->target().x(), eit->target().y(), eit->target().z());
+		vertexArray->push_back(a);
+		vertexArray->push_back(b);
+		numlines+=2;
 	}
-	glEnd();
+	geometry_lines->setVertexArray(vertexArray);
 
-
-
-
-	glPopMatrix();
+	// set the colors as before, plus using the above
+	osg::Vec4Array* colors = new osg::Vec4Array;
+	colors->push_back(osg::Vec4(1.0f, 0.0f, 0.0f, 1.0f));
+	geometry_lines->setColorArray(colors, osg::Array::BIND_OVERALL);
+	geometry_lines->addPrimitiveSet(new osg::DrawArrays(osg::PrimitiveSet::LINES, 0, numlines));
+	line_node = new osg::Geode();
+	line_node->addDrawable(geometry_lines.get());
+	root->addChild(line_node.get());
 }
 
-void points_draw_dt(double t)	//绘制三角网格上的点(tgl2)
+void refreashPointsre()
 {
-	//glClear(GL_COLOR_BUFFER_BIT);
-	glPushMatrix();
-	//std::vector <Point>::iterator iter;
-	glColor3f(0.0, 1.0, t);
-	glPointSize(5);
-
-	//Delaunay dt = a.delaunay_temp;
-
-	glBegin(GL_POINTS);
+	geometry_points_result = new osg::Geometry();
+	osg::ref_ptr<osg::Vec3Array> vertexArray = new osg::Vec3Array;
+	int numpoints = 0;
 	for (auto iter = a.ms2.Vertexs.begin(); iter != a.ms2.Vertexs.end(); iter++)
 	{
-		glVertex3f(iter->x(), iter->y(),iter->z());
+		osg::Vec3 a(iter->x(), iter->y(), iter->z());
+		vertexArray->push_back(a);
+		numpoints++;
 	}
-		
-	glEnd();
-	glPopMatrix();
-	//glutSwapBuffers();
+
+	geometry_points_result->setVertexArray(vertexArray);
+
+	// set the colors as before, plus using the above
+	osg::Vec4Array* colors = new osg::Vec4Array;
+	colors->push_back(osg::Vec4(0.0f, 1.0f, 1.0f, 1.0f));
+	geometry_points_result->setColorArray(colors, osg::Array::BIND_OVERALL);
+	geometry_points_result->addPrimitiveSet(new osg::DrawArrays(osg::PrimitiveSet::POINTS, 0, numpoints));
+	points_node = new osg::Geode();
+	points_node->addDrawable(geometry_points_result.get());
+	root->addChild(points_node.get());
 }
 
-void points_draw(double t)	//绘制生成的原始点
+class UseEventHandler :public osgGA::GUIEventHandler
 {
-	//glClear(GL_COLOR_BUFFER_BIT);
-	glPushMatrix();
-	std::vector <Point>::iterator iter;
-	glColor3f(0.0, 1.0, t);
-	glPointSize(3);
-	glBegin(GL_POINTS);
-	for (iter = points_re.begin(); iter != points_re.end(); iter++)
-		glVertex3f(iter->hx(), iter->hy(),iter->hz());
-	glEnd();
-	glPopMatrix();
-	//glutSwapBuffers();
-}
-
-void assin_draw()		//绘制所有被分配到顶点的点
-{
-	glPushMatrix();
-	//std::vector <Point>::iterator iter;
-	glColor3f(0.2, 0.6, 0.1);
-	glPointSize(5);
-	glBegin(GL_POINTS);
-
-	for (auto iter=a.vertex_points_map.begin();iter!=a.vertex_points_map.end();iter++)
+public:
+	virtual bool handle(const osgGA::GUIEventAdapter& ea, osgGA::GUIActionAdapter& aa)
 	{
-		_Cost cost = iter->second;
-		for (auto pit=cost.assined_points.begin();pit!=cost.assined_points.end();pit++)
+		osgViewer::Viewer* viewer = dynamic_cast<osgViewer::Viewer*>(&aa);
+		if (!viewer)return false;
+
+		switch (ea.getEventType())
 		{
-			glVertex3f(pit->x(),pit->y(), pit->z());
+		case osgGA::GUIEventAdapter::KEYUP:
+		{
+			if (ea.getKey() == osgGA::GUIEventAdapter::KEY_Tab)
+			{
+
+				viewer->getSceneData()->asGroup()->removeChild(points_node);
+				viewer->getSceneData()->asGroup()->removeChild(line_node);
+				a.PickAndCollap();
+				refreashLines();
+				refreashPointsre();
+			}
+			if (ea.getKey() == osgGA::GUIEventAdapter::KEY_F1)
+			{
+				a.CaculateAssinCost();
+				a.GetVaild1();
+
+				a.vertex_points_map_temp.clear();
+				a.edge_points_map_temp.clear();
+
+				viewer->getSceneData()->asGroup()->removeChild(points_node);
+				viewer->getSceneData()->asGroup()->removeChild(line_node);
+				//a.PickAndCollap();
+				refreashLines();
+				refreashPointsre();
+			}
+			break;
 		}
-		
+		default:
+			break;
+		}
+		return false;
 	}
-	glEnd();
-	glPopMatrix();
-}
-
-void display(void)
-{
-
-	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
-	/* Update viewer position in modelview matrix */
-
-	glLoadIdentity();
-	gluLookAt(viewer[0], viewer[1], viewer[2], 0.0, 0.0, 0.0, 0.0, 1.0, 0.0);
-
-	/* rotate cube */
-
-	glTranslatef(place[0], 0.0, 0.0);
-	glTranslatef(0.0, place[1], 0.0);
-	glTranslatef(0.0, 0.0, place[2]);
-
-	glRotatef(theta[0], 1.0, 0.0, 0.0);
-	glRotatef(theta[1], 0.0, 1.0, 0.0);
-	glRotatef(theta[2], 0.0, 0.0, 1.0);
-
-
-	//colorcube();
-
-	//glFlush();
-	//glutSwapBuffers();
-
-
-	////glClear(GL_COLOR_BUFFER_BIT);
-	//////RandomInit(NumSeed);
-	////glTranslatef(place[0], 0.0, 0.0);
-	////glTranslatef(0.0, place[1], 0.0);
-	////glTranslatef(0.0, 0.0, place[2]);
-
-	////glRotatef(theta[0], 1.0, 0.0, 0.0);
-	////glRotatef(theta[1], 0.0, 1.0, 0.0);
-	////glRotatef(theta[2], 0.0, 0.0, 1.0);
-
-	//glClear(GL_COLOR_BUFFER_BIT);
-	
-	points_draw_dt(1);
-	points_draw(0.5);
-	//assin_draw();
-
-
-	//a.InitPriQueue();
-	//a.PickAndCollap();
-	lines_draw(0.5);
-	//points_draw_dt(1);
-	//lines_draw(1);
-
-	glutSwapBuffers();
-	//points_triangulation();
-}
-
-void keybordClick(unsigned char key, int x, int y)
-{
-	if (key == 's')
-	{
-		glClear(GL_COLOR_BUFFER_BIT);
-		glPushMatrix();
-		a.PickAndCollap();
-		points_draw(0.5);
-		assin_draw();
-		lines_draw(0.5);
-		points_draw_dt(1);
-		
-		glPopMatrix();
-		glutSwapBuffers();
-	}
-	else if(key=='t')
-	{
-		a.CaculateAssinCost();
-		a.GetVaild1();
-
-		a.vertex_points_map_temp.clear();
-		a.edge_points_map_temp.clear();
-		glClear(GL_COLOR_BUFFER_BIT);
-		glPushMatrix();
-		//a.PickAndCollap();
-		points_draw(0.5);
-		assin_draw();
-		lines_draw(0.5);
-		points_draw_dt(1);
-
-		glPopMatrix();
-		glutSwapBuffers();
-	}
-}
-
-void init(void)
-{
-	//glEnable(GL_CULL_FACE);
-	glEnable(GL_DEPTH_TEST);
-	//glEnable(GL_LIGHTING);
-	//glEnable(GL_COLOR_MATERIAL);
-
-
-	//glColorMaterial(GL_FRONT, GL_AMBIENT_AND_DIFFUSE);
-}
-
-void reshape(int w, int h)
-{
-	//global_w = w;
-	//global_h = h;
-	glViewport(0, 0, w, h);
-	glMatrixMode(GL_PROJECTION);
-	glLoadIdentity();
-	glOrtho(-100.0f, 100.0f, -100.0f, 100.0f, -100.0f, 100.0f);
-	glMatrixMode(GL_MODELVIEW);
-	glLoadIdentity();
-}
-
-void mouseMove(int x, int y)
-{
-	//double movingScale = axislen / win_height;  // just a scaling factor to make the mouse moving not too sensitive
-	/* rotation*/
-	if (mouseButton == GLUT_LEFT_BUTTON)
-	{
-		theta[0] += (y - mousePositionY0) * 0.05;
-		theta[1] += (x - mousePositionX0) * 0.05;
-
-
-	}
-
-	/*xy translation */
-	if (mouseButton == GLUT_MIDDLE_BUTTON)
-	{
-		place[0] += (x - mousePositionX0) * 0.05;
-		place[1] += (y - mousePositionY0) * 0.05;
-	}
-
-	/* zoom in and out */
-	if (mouseButton == GLUT_RIGHT_BUTTON)
-	{
-		place[2] += (x - mousePositionX0) * 0.05;
-	}
-	mousePositionX0 = x;
-	mousePositionY0 = y;
-	glutPostRedisplay();
-}
-
-void mouseClick(int button, int state, int x, int y)
-{
-	if (button == GLUT_LEFT_BUTTON && state == GLUT_DOWN)
-		mouseButton = GLUT_LEFT_BUTTON;
-	else if (button == GLUT_MIDDLE_BUTTON && state == GLUT_DOWN)
-		mouseButton = GLUT_MIDDLE_BUTTON;
-	else if (button == GLUT_RIGHT_BUTTON && state == GLUT_DOWN)
-		mouseButton = GLUT_RIGHT_BUTTON;
-
-	mousePositionX0 = x;
-	mousePositionY0 = y;
-	return;
-}
+};
 
 int main(int argc, char** argv)
 {
-	//border = Polygon_exact(Border_p.begin(), Border_p.end());
-	//PrintHelp();
 	otr_extrat();
-	glutInit(&argc, argv);
-	glutInitDisplayMode(GLUT_RGB | GLUT_DOUBLE | GLUT_DEPTH);
-	glutInitWindowSize(800, 800);
-	glutInitWindowPosition(100, 100);
-	glutCreateWindow("Lloyd");
-	init();
-	glutDisplayFunc(display);
-	glOrtho(-100.0f, 100.0f, -100.0f, 100.0f, -100.0f, 100.0f);
-	glutReshapeFunc(reshape);
-	glutKeyboardFunc(keybordClick);
-	glutMouseFunc(mouseClick);
-	glutMotionFunc(mouseMove);
-	glutMainLoop();
-	return 0;
+	
+	osg::ref_ptr<osg::Geode> geode = new osg::Geode();
+	
+	geode->addDrawable(geometry_points_1.get());
+	root->addChild(geode.get());
+	refreashLines();
+	refreashPointsre();
+	
+	osg::StateSet* stateSet = root->getOrCreateStateSet();
+
+	osg::Point* point = new osg::Point;                  
+	point->setSize(10);
+	stateSet->setAttribute(point);
+
+	osg::LineWidth* lineWidth = new osg::LineWidth;
+	lineWidth->setWidth(5);
+	stateSet->setAttribute(lineWidth);
+
+	root->getOrCreateStateSet()->setMode(GL_LIGHTING, osg::StateAttribute::OFF | osg::StateAttribute::OVERRIDE);
+	viewer->setSceneData(root.get());
+	viewer->addEventHandler(new UseEventHandler());
+	viewer->run();
+	return viewer->run();
 }
