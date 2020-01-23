@@ -251,7 +251,7 @@ void OTR::GetVaild1()
 	assin_points.clear();
 	for (auto epmit = edge_points_map_temp.begin(); epmit != edge_points_map_temp.end(); ++epmit)
 	{
-		if (epmit->second.assined_points.size()>=10)
+		if (epmit->second.assined_points.size()>=7)
 		{
 			ms2.edges.insert(epmit->first);
 			ms2.Vertexs.insert(epmit->first.source());
@@ -490,8 +490,18 @@ void OTR::applyRelocate(Point& s, Point& t)
 double OTR::CaculateAssinCost()
 {
 	
-	for (auto apit=assin_points.begin();apit!=assin_points.end();apit++)
+	//vector<vector<Point>::iterator> eitstore;
+
+
+	//for (auto eit = assin_points.begin(); eit != assin_points.end(); ++eit)
+	//{
+	//	eitstore.push_back(eit);
+	//}
+
+	for (auto apit = assin_points.begin(); apit != assin_points.end(); apit++)
 	{
+
+		//auto apit = eitstore[i];
 		Point pnow = *apit;
 		Segment nearest_edge = ms2.FindNearestEdge(pnow);
 

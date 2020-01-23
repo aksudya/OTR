@@ -39,7 +39,7 @@ Segment mymesh::FindNearestEdge(Point& p)
 	{
 		eitstore.push_back(eit);
 	}
-#pragma omp parallel for
+//#pragma omp parallel for
 	for (int i=0;i<eitstore.size();i++)
 	{
 		auto eit = eitstore[i];
