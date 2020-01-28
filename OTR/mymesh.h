@@ -9,7 +9,7 @@
 #include <CGAL/Polygon_2.h>
 #include <CGAL/Periodic_3_triangulation_3.h>
 #include <CGAL/point_generators_3.h>
-#include <GLUT.h>
+//#include <gl/GLUT.h>
 #include <iostream>
 #include <cmath>
 #include <random>

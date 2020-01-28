@@ -14,7 +14,7 @@ osg::ref_ptr<osg::Geode> points_node = new osg::Geode();
 void otr_extrat()
 {
 
-	ifstream infile;
+/*	ifstream infile;
 
 	infile.open("points_on_edges.xyz", ios::in);
 	while (!infile.eof())           
@@ -24,28 +24,28 @@ void otr_extrat()
 		Point p(x, y,z);
 		points_1.push_back(p);
 		
-	}											//读入xy文件
+	}	*/										//读入xy文件
 
-	//CGAL::Random rng(5);
-	//Point aa(-10, -10, -10);
-	//Point bb(10, 10, 10);
-	//Point cc(-10, 10, 10);
-	//Point dd(-10, 10, -10);
-	//CGAL::Random_points_on_segment_3<Point> point_generator1(aa,bb,rng);			//正方形上
-	//CGAL::Random_points_on_segment_3<Point> point_generator2(bb, cc, rng);			//正方形上
-	//CGAL::Random_points_on_segment_3<Point> point_generator3(cc, dd, rng);			//正方形上
-	//CGAL::Random_points_on_segment_3<Point> point_generator4(dd, aa, rng);			//正方形上
-	//CGAL::Random_points_on_segment_3<Point> point_generator5(bb, dd, rng);			//正方形上
-	//CGAL::Random_points_on_segment_3<Point> point_generator6(aa, cc, rng);			//正方形上
-	////CGAL::Random_points_on_circle_2<Point> point_generator(1., rng);		//圆上
-	////CGAL::Random_points_on_square_2<Point> point_generator(1., rng);			//正方形上
-	//////CGAL::Random_points_in_square_2<Point> point_generator(1., rng);		//正方形内
-	//CGAL::cpp11::copy_n(point_generator1, 50, std::back_inserter(points_1));	//100为生成点的个数
-	//CGAL::cpp11::copy_n(point_generator2, 50, std::back_inserter(points_1));	//100为生成点的个数
-	//CGAL::cpp11::copy_n(point_generator3, 50, std::back_inserter(points_1));	//100为生成点的个数
-	//CGAL::cpp11::copy_n(point_generator4, 50, std::back_inserter(points_1));	//100为生成点的个数
-	//CGAL::cpp11::copy_n(point_generator5, 50, std::back_inserter(points_1));	//100为生成点的个数
-	//CGAL::cpp11::copy_n(point_generator6, 50, std::back_inserter(points_1));	//100为生成点的个数
+	CGAL::Random rng(5);
+	Point aa(-10, -10, -10);
+	Point bb(10, 10, 10);
+	Point cc(-10, 10, 10);
+	Point dd(-10, 10, -10);
+	CGAL::Random_points_on_segment_3<Point> point_generator1(aa,bb,rng);			//正方形上
+	CGAL::Random_points_on_segment_3<Point> point_generator2(bb, cc, rng);			//正方形上
+	CGAL::Random_points_on_segment_3<Point> point_generator3(cc, dd, rng);			//正方形上
+	CGAL::Random_points_on_segment_3<Point> point_generator4(dd, aa, rng);			//正方形上
+	CGAL::Random_points_on_segment_3<Point> point_generator5(bb, dd, rng);			//正方形上
+	CGAL::Random_points_on_segment_3<Point> point_generator6(aa, cc, rng);			//正方形上
+	//CGAL::Random_points_on_circle_2<Point> point_generator(1., rng);		//圆上
+	//CGAL::Random_points_on_square_2<Point> point_generator(1., rng);			//正方形上
+	////CGAL::Random_points_in_square_2<Point> point_generator(1., rng);		//正方形内
+	CGAL::cpp11::copy_n(point_generator1, 50, std::back_inserter(points_1));	//100为生成点的个数
+	CGAL::cpp11::copy_n(point_generator2, 50, std::back_inserter(points_1));	//100为生成点的个数
+	CGAL::cpp11::copy_n(point_generator3, 50, std::back_inserter(points_1));	//100为生成点的个数
+	CGAL::cpp11::copy_n(point_generator4, 50, std::back_inserter(points_1));	//100为生成点的个数
+	CGAL::cpp11::copy_n(point_generator5, 50, std::back_inserter(points_1));	//100为生成点的个数
+	CGAL::cpp11::copy_n(point_generator6, 50, std::back_inserter(points_1));	//100为生成点的个数
 	osg::ref_ptr<osg::Vec3Array> coords = new osg::Vec3Array();
 	osg::ref_ptr<osg::Vec4Array> color = new osg::Vec4Array();
 	for (auto iter = points_1.begin(); iter != points_1.end(); iter++)
@@ -175,7 +175,44 @@ int main(int argc, char** argv)
 	otr_extrat();
 	
 	osg::ref_ptr<osg::Geode> geode = new osg::Geode();
+
+	//osg::ref_ptr<osgViewer::Viewer> viewer = new osgViewer::Viewer;
+	viewer->addEventHandler(new osgGA::StateSetManipulator(viewer->getCamera()->getOrCreateStateSet()));
+	//// 新建一个 osg::GraphicsContext::Traits，描述窗口的属性
+	osg::ref_ptr<osg::GraphicsContext::Traits> traits = new osg::GraphicsContext::Traits;
+	traits->x = 40;
+	traits->y = 40;
+	traits->width = 800;
+	traits->height = 800;
+	traits->windowDecoration = true;
+	traits->doubleBuffer = true;
+	traits->sharedContext = 0;
+
+	osg::ref_ptr<osg::GraphicsContext> gc = osg::GraphicsContext::createGraphicsContext(traits.get());
+
+	osg::ref_ptr<osg::Camera> camera = new osg::Camera;
+	double fovy, aspectRatio, zNear, zFar;
+	viewer->getCamera()->getProjectionMatrixAsPerspective(fovy, aspectRatio, zNear, zFar);
+	double newAspectRatio = double(traits->width) / double(traits->height);
+	double aspectRatioChange = newAspectRatio / aspectRatio;
+	if (aspectRatioChange != 1.0)
+	{
+		//设置投影矩阵
+		viewer->getCamera()->getProjectionMatrix() *= osg::Matrix::scale(1.0 / aspectRatioChange, 1.0, 1.0);
+	}
 	
+
+	camera->setGraphicsContext(gc.get());
+	camera->setViewport(new osg::Viewport(0, 0, traits->width, traits->height));
+	GLenum buffer = traits->doubleBuffer ? GL_BACK : GL_FRONT;
+	camera->setDrawBuffer(buffer);
+	camera->setReadBuffer(buffer);
+
+	// add this slave camera to the viewer, with a shift left of the projection matrix
+	viewer->addSlave(camera.get());
+
+
+
 	geode->addDrawable(geometry_points_1.get());
 	root->addChild(geode.get());
 	refreashLines();
