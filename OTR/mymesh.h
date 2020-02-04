@@ -28,8 +28,9 @@
 #include <osgUtil/Optimizer>
 #include <osg/Point>
 #include <osg/LineWidth>
-#include<osgDB\ReadFile>
-#include<osg\Node>
+#include <osgDB\ReadFile>
+#include <osg\Node>
+#include <omp.h>
 //#define METHED2
 
 using namespace std;

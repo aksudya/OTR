@@ -89,6 +89,9 @@ public:
 
 	vector<Segment> Delete_edge;				//分配到顶点后从边表中删除的边
 
+	set<Segment, Segment_more> to_be_Collaps;				//下次迭代中将要被计算合并的边
+
+	vector<Point> OneRingPoint;
 
 	OTR();
 
@@ -103,7 +106,7 @@ public:
 	void PickAndCollap();		//	选取队列中第一条边合并
 	void GetVaild();			//获取有效边并更新ms2
 	void GetVaild1();			//获取有效边并更新ms2
-
+	void GetOneRingEdge(vector<Point> s);		//获取一圈的边
 
 	double CaculateAssinCost();		//计算当前分配方案总代价
 	double CaculateEachEdgeCost();	//计算每条边的代价

@@ -7,10 +7,10 @@ OTR::OTR()
 void OTR::Init(vector<Point> input)
 {
 	points_input = input;
-	default_random_engine engine(1);
+	default_random_engine engine(2);
 	vector<bool> index(input.size(),false);
 	uniform_int_distribution<int> ud(0, input.size() - 1);
-	for (int i = 0; i < 0.2*input.size(); ++i)
+	for (int i = 0; i < 0.3*input.size(); ++i)
 	{
 		int id = ud(engine);
 		while (index[id])
@@ -46,11 +46,18 @@ void OTR::Init(vector<Point> input)
 		ms1.edges.insert(s);
 	}
 
+	
+
 	pri_cost = 0;
 	iter_times = 0;
 	ms2 = ms1;
 
-	
+	for (auto eit = ms2.edges.begin(); eit != ms2.edges.end(); ++eit)
+	{
+		Segment sss = *eit;
+		to_be_Collaps.insert(sss);
+		to_be_Collaps.insert(twin_edge(sss));
+	}
 	
 #ifdef METHED2
 	CaculateAssinCost();
@@ -83,7 +90,7 @@ void OTR::Init(vector<Point> input)
 void OTR::InitPriQueue()
 {
 	int kk = 0;
-	for (auto eit=ms1.edges.begin();eit!=ms1.edges.end();++eit)
+	for (auto eit= to_be_Collaps.begin();eit!= to_be_Collaps.end();++eit)
 	{
 		kk++;
 		ms2 = ms1;
@@ -112,7 +119,7 @@ void OTR::InitPriQueue()
 		}
 
 
-		ms2 = ms1;
+		/*ms2 = ms1;
 		Segment edge1t = twin_edge(edge1);
 
 		int re1 = ms2.MakeCollaps(edge1t.source(), edge1t.target());
@@ -133,11 +140,11 @@ void OTR::InitPriQueue()
 		if (re1 == 1)
 		{
 			assin_points.pop_back();
-		}
+		}*/
 
 	}
 	ms2 = ms1;
-	cout << kk << " ";
+	cout << " queuesize:" << half_edge_queue.size()<<" "<<ms2.Vertexs.size() <<" "<< to_be_Collaps.size() << " ";
 }
 
 
@@ -147,15 +154,92 @@ void OTR::InitPriQueue()
 void OTR::PickAndCollap()
 {
 	iter_times++;
-	CaculateAssinCost();
+	//CaculateAssinCost();
+	////for (auto eit = ms2.edges.begin(); eit != ms2.edges.end(); ++eit)
+	////{
+	////	to_be_Collaps.insert(*eit);
+	////}
 
+	//for (int i = 0; i < 1; ++i)
+	//{
+	//	vector<Point> newps;
+	//	vector<Point> ppits;
+	//	int nump = 0;
+	//	for (auto pit = OneRingPoint.begin(); pit != OneRingPoint.end(); ++pit)
+	//	{
+	//		Point newp = Relocatev(*pit);
+	//		Point ppit = *pit;
+	//		nump++;
+	//		newps.push_back(newp);
+	//		ppits.push_back(ppit);
+	//	}
+
+	//	for (int i = 0; i < nump; ++i)
+	//	{
+	//		applyRelocate(ppits[i], newps[i]);
+	//	}
+	//	
+	//	
+	//	vertex_points_map_temp.clear();
+	//	edge_points_map_temp.clear();
+	//	CaculateAssinCost();
+	//}
+	//
+
+	////vertex_points_map_temp.clear();
+	////edge_points_map_temp.clear();
+	////GetVaild();
+
+	//assin_points.clear();
+	//for (auto ipit = points_input.begin(); ipit != points_input.end(); ++ipit)
+	//{
+	//	Point ip = *ipit;
+	//	if (ms2.Vertexs.find(ip) == ms2.Vertexs.end())
+	//	{
+	//		assin_points.push_back(ip);
+	//	}
+	//}
+
+	ms1 = ms2;
+
+	vertex_points_map = vertex_points_map_temp;
+	edge_points_map = edge_points_map_temp;			//为了显示
+	vertex_points_map_temp.clear();
+	edge_points_map_temp.clear();
+	pri_cost = CaculateAssinCost();
+
+	vertex_points_map_temp.clear();
+	edge_points_map_temp.clear();
+	InitPriQueue();
+
+
+	Segment fst_edge = half_edge_queue.top().edge;
+	cout << half_edge_queue.top().cost << endl;
+
+	OneRingPoint.clear();
+	OneRingPoint = GetOneRingVertex(fst_edge.source());
+	
+
+	int re=ms2.MakeCollaps(fst_edge.source(), fst_edge.target());
+	if (re == 1)
+	{
+		assin_points.push_back(fst_edge.target());
+	}
+	assin_points.push_back(fst_edge.source());
+
+
+	CaculateAssinCost();
+	//for (auto eit = ms2.edges.begin(); eit != ms2.edges.end(); ++eit)
+	//{
+	//	to_be_Collaps.insert(*eit);
+	//}
 
 	for (int i = 0; i < 1; ++i)
 	{
 		vector<Point> newps;
 		vector<Point> ppits;
 		int nump = 0;
-		for (auto pit = ms2.Vertexs.begin(); pit != ms2.Vertexs.end(); ++pit)
+		for (auto pit = OneRingPoint.begin(); pit != OneRingPoint.end(); ++pit)
 		{
 			Point newp = Relocatev(*pit);
 			Point ppit = *pit;
@@ -168,13 +252,14 @@ void OTR::PickAndCollap()
 		{
 			applyRelocate(ppits[i], newps[i]);
 		}
-		
-		
+
+
 		vertex_points_map_temp.clear();
 		edge_points_map_temp.clear();
 		CaculateAssinCost();
+		OneRingPoint = newps;
 	}
-	
+
 
 	//vertex_points_map_temp.clear();
 	//edge_points_map_temp.clear();
@@ -192,34 +277,79 @@ void OTR::PickAndCollap()
 
 	ms1 = ms2;
 
-	vertex_points_map = vertex_points_map_temp;
-	edge_points_map = edge_points_map_temp;			//为了显示
-	vertex_points_map_temp.clear();
-	edge_points_map_temp.clear();
-	pri_cost = CaculateAssinCost();
-
-	vertex_points_map_temp.clear();
-	edge_points_map_temp.clear();
-	InitPriQueue();
-
-	Segment fst_edge = half_edge_queue.top().edge;
-	cout << half_edge_queue.top().cost << endl;
-
-	int re=ms2.MakeCollaps(fst_edge.source(), fst_edge.target());
-	if (re == 1)
-	{
-		assin_points.push_back(fst_edge.target());
-	}
-	assin_points.push_back(fst_edge.source());
-
-	ms1 = ms2;
-
+	GetOneRingEdge(OneRingPoint);
+	priority_queue<pri_queue_item> temp_queue;
+	//cout << endl;
 	while (!half_edge_queue.empty())		//把优先队列清空
 	{
+		//cout << half_edge_queue.top().cost << endl;
+		Segment eedge = half_edge_queue.top().edge;
+		/*if(eedge==fst_edge)
+		{
+			
+		}*/
+
+		if(to_be_Collaps.find(eedge)==to_be_Collaps.end() 
+			&& (ms2.edges.find(eedge) != ms2.edges.end()
+			|| ms2.edges.find(twin_edge(eedge)) != ms2.edges.end()))
+		{
+			pri_queue_item aa = half_edge_queue.top();
+			temp_queue.push(aa);
+		}
 		half_edge_queue.pop();
 	}
-	
-	cout << iter_times << " ";
+	half_edge_queue = temp_queue;
+	cout << iter_times <<" ";
+}
+
+void OTR::GetOneRingEdge(vector<Point> s)
+{
+	to_be_Collaps.clear();
+	set<Point> onePoint;
+	for (auto pit = s.begin(); pit != s.end(); ++pit)
+	{
+		for (auto eit = ms2.edges.begin(); eit != ms2.edges.end(); ++eit)
+		{
+			if (eit->source() == *pit)
+			{
+
+				onePoint.insert(eit->target());
+
+			}
+			if (eit->target() == *pit)
+			{
+
+				onePoint.insert(eit->source());
+
+			}
+		}
+	}
+	//onePoint.push_back(e.source());
+
+	for (auto pit = onePoint.begin(); pit != onePoint.end(); ++pit)
+	{
+		for (auto eit = ms2.edges.begin(); eit != ms2.edges.end(); ++eit)
+		{
+			if (eit->source() == *pit)
+			{
+				Segment edge1 = *eit;
+				to_be_Collaps.insert(edge1);
+				to_be_Collaps.insert(twin_edge(edge1));
+				//onePoint.push_back(eit->target());
+
+			}
+			if (eit->target() == *pit)
+			{
+				Segment edge2 = *eit;
+				to_be_Collaps.insert(edge2);
+				to_be_Collaps.insert(twin_edge(edge2));
+				//onePoint.push_back(eit->source());
+
+			}
+		}
+	}
+
+	//return res;
 }
 
 void OTR::GetVaild()
@@ -237,6 +367,7 @@ void OTR::GetVaild()
 	}
 	for (auto ipit=points_input.begin();ipit!=points_input.end();++ipit)
 	{
+		
 		Point ip = *ipit;
 		if(ms2.Vertexs.find(ip)==ms2.Vertexs.end())
 		{

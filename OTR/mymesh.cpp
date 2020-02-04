@@ -32,25 +32,32 @@ Segment mymesh::FindNearestEdge(Point& p)
 {
 	double min = DBL_MAX;
 	Segment re;
-	vector<set<Segment, Segment_more>::iterator> eitstore;
+	//vector<set<Segment, Segment_more>::iterator> eitstore;
 
 
+	//for (auto eit = edges.begin(); eit != edges.end(); ++eit)
+	//{
+	//	eitstore.push_back(eit);
+	//}
+
+	//omp_lock_t lock;
+	//omp_init_lock(&lock);
+//#pragma omp parallel for
 	for (auto eit = edges.begin(); eit != edges.end(); ++eit)
 	{
-		eitstore.push_back(eit);
-	}
-//#pragma omp parallel for
-	for (int i=0;i<eitstore.size();i++)
-	{
-		auto eit = eitstore[i];
+		//auto eit = eitstore[i];
 		Segment s = *eit;
 		double dis = squared_distance(p,s);
+
 		if(dis<min)
 		{
+			//omp_set_l ock(&lock);
 			min = dis;
 			re = s;
+			//omp_unset_lock(&lock);
 		}
 	}
+	//omp_destroy_lock(&lock);
 	return re;
 }
 
