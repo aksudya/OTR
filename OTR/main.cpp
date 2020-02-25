@@ -4,27 +4,51 @@
 OTR a;
 std::vector<Point> points_1;
 std::vector<Point> points_re;
+std::vector<Point> points_ori;
 osg::ref_ptr<osg::Group> root = new osg::Group();
 osg::ref_ptr<osgViewer::Viewer> viewer = new osgViewer::Viewer;
 osg::ref_ptr<osg::Geometry> geometry_points_1 = new osg::Geometry();
+osg::ref_ptr<osg::Geometry> geometry_points_ori = new osg::Geometry();
 osg::ref_ptr<osg::Geometry> geometry_points_result = new osg::Geometry();
 osg::ref_ptr<osg::Geometry> geometry_lines = new osg::Geometry();
 osg::ref_ptr<osg::Geode> line_node = new osg::Geode();
 osg::ref_ptr<osg::Geode> points_node = new osg::Geode();
+osg::ref_ptr<osg::Geode> points_ori_node = new osg::Geode();
 void otr_extrat()
 {
 
 	ifstream infile;
 
-	infile.open("fandisk.xyz", ios::in);
+	infile.open("Shape03.txt", ios::in);
 	while (!infile.eof())           
 	{
 		double x, y,z;
-		infile >> x >>y >>z;
-		Point p(x, y,z);
+		infile >> x >>y;
+		Point p(x, y,0);
 		points_1.push_back(p);
 		
-	}											//读入xy文件
+	}
+	
+
+	ifstream infile1;
+
+	osg::ref_ptr<osg::Vec3Array> coords1 = new osg::Vec3Array();
+	osg::ref_ptr<osg::Vec4Array> color1 = new osg::Vec4Array();
+	infile1.open("fan.xyz", ios::in);
+	while (!infile1.eof())
+	{
+		double x, y, z;
+		infile1 >> x >> y >> z;
+		Point p(x, y, z);
+		points_ori.push_back(p);
+		coords1->push_back(osg::Vec3(p[0], p[1], p[2]));
+		color1->push_back(osg::Vec4(0, 1, 0, 1.0f));
+	}
+	geometry_points_ori->setVertexArray(coords1.get());
+	geometry_points_ori->setColorArray(color1.get());
+	geometry_points_ori->setColorBinding(osg::Geometry::BIND_PER_VERTEX);
+	geometry_points_ori->addPrimitiveSet(new osg::DrawArrays(osg::PrimitiveSet::POINTS, 0, points_ori.size()));
+	//读入xy文件
 
 	//CGAL::Random rng(5);
 	//Point aa(-10, -10, -10);
@@ -46,14 +70,14 @@ void otr_extrat()
 	//CGAL::cpp11::copy_n(point_generator4, 50, std::back_inserter(points_1));	//100为生成点的个数
 	//CGAL::cpp11::copy_n(point_generator5, 50, std::back_inserter(points_1));	//100为生成点的个数
 	//CGAL::cpp11::copy_n(point_generator6, 50, std::back_inserter(points_1));	//100为生成点的个数
-	
+	//
 	osg::ref_ptr<osg::Vec3Array> coords = new osg::Vec3Array();
 	osg::ref_ptr<osg::Vec4Array> color = new osg::Vec4Array();
 	for (auto iter = points_1.begin(); iter != points_1.end(); iter++)
 	{
-		double xx = iter->hx() * 8 - 40;
-		double yy = iter->hy() * 8 - 40;
-		double zz = iter->hz() * 8 - 40;
+		double xx = iter->hx();
+		double yy = iter->hy();
+		double zz = iter->hz();
 		Point p(xx, yy,zz);
 		points_re.push_back(p);
 		coords->push_back(osg::Vec3(p[0], p[1], p[2]));
@@ -143,18 +167,26 @@ public:
 			{
 				//for (int i = 0; i < 10; ++i)
 				//{
-					viewer->getSceneData()->asGroup()->removeChild(points_node);
-					viewer->getSceneData()->asGroup()->removeChild(line_node);
+				do
+				{
+					//viewer->getSceneData()->asGroup()->removeChild(points_node);
+					//viewer->getSceneData()->asGroup()->removeChild(line_node);
 					a.PickAndCollap();
-					refreashLines();
-					refreashPointsre();
+					//refreashLines();
+					//refreashPointsre();
+				}while (a.ms2.Vertexs.size()>=20);
+
+				viewer->getSceneData()->asGroup()->removeChild(points_node);
+				viewer->getSceneData()->asGroup()->removeChild(line_node);
+				refreashLines();
+				refreashPointsre();
 				//}
 				
 			}
 			if (ea.getKey() == osgGA::GUIEventAdapter::KEY_F1)
 			{
 				a.CaculateAssinCost();
-				a.GetVaild1();
+				a.GetVaild();
 
 				a.vertex_points_map_temp.clear();
 				a.edge_points_map_temp.clear();
@@ -164,6 +196,30 @@ public:
 				//a.PickAndCollap();
 				refreashLines();
 				refreashPointsre();
+			}
+			if (ea.getKey() == osgGA::GUIEventAdapter::KEY_F9)
+			{
+				a.CaculateAssinCost();
+				a.GetVaild2();
+
+				a.vertex_points_map_temp.clear();
+				a.edge_points_map_temp.clear();
+
+				viewer->getSceneData()->asGroup()->removeChild(points_node);
+				viewer->getSceneData()->asGroup()->removeChild(line_node);
+				//a.PickAndCollap();
+				refreashLines();
+				refreashPointsre();
+			}
+			if (ea.getKey() == osgGA::GUIEventAdapter::KEY_F2)
+			{
+				points_ori_node = new osg::Geode();
+				points_ori_node->addDrawable(geometry_points_ori.get());
+				root->addChild(points_ori_node.get());
+			}
+			if (ea.getKey() == osgGA::GUIEventAdapter::KEY_F3)
+			{
+				viewer->getSceneData()->asGroup()->removeChild(points_ori_node);
 			}
 			break;
 		}
@@ -225,7 +281,7 @@ int main(int argc, char** argv)
 	osg::StateSet* stateSet = root->getOrCreateStateSet();
 
 	osg::Point* point = new osg::Point;                  
-	point->setSize(5);
+	point->setSize(3);
 	stateSet->setAttribute(point);
 
 	osg::LineWidth* lineWidth = new osg::LineWidth;

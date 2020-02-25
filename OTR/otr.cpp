@@ -10,7 +10,7 @@ void OTR::Init(vector<Point> input)
 	default_random_engine engine(2);
 	vector<bool> index(input.size(),false);
 	uniform_int_distribution<int> ud(0, input.size() - 1);
-	for (int i = 0; i < 0.3*input.size(); ++i)
+	for (int i = 0; i < 1*input.size(); ++i)
 	{
 		int id = ud(engine);
 		while (index[id])
@@ -229,41 +229,36 @@ void OTR::PickAndCollap()
 
 
 	CaculateAssinCost();
-	//for (auto eit = ms2.edges.begin(); eit != ms2.edges.end(); ++eit)
+
+
+	//for (int i = 0; i < 1; ++i)
 	//{
-	//	to_be_Collaps.insert(*eit);
+	//	vector<Point> newps;
+	//	vector<Point> ppits;
+	//	int nump = 0;
+	//	for (auto pit = OneRingPoint.begin(); pit != OneRingPoint.end(); ++pit)
+	//	{
+	//		Point newp = Relocatev(*pit);
+	//		Point ppit = *pit;
+	//		nump++;
+	//		newps.push_back(newp);
+	//		ppits.push_back(ppit);
+	//	}
+
+	//	for (int i = 0; i < nump; ++i)
+	//	{
+	//		applyRelocate(ppits[i], newps[i]);
+	//	}
+
+
+	//	vertex_points_map_temp.clear();
+	//	edge_points_map_temp.clear();
+	//	CaculateAssinCost();
+	//	OneRingPoint = newps;
 	//}
 
-	for (int i = 0; i < 1; ++i)
-	{
-		vector<Point> newps;
-		vector<Point> ppits;
-		int nump = 0;
-		for (auto pit = OneRingPoint.begin(); pit != OneRingPoint.end(); ++pit)
-		{
-			Point newp = Relocatev(*pit);
-			Point ppit = *pit;
-			nump++;
-			newps.push_back(newp);
-			ppits.push_back(ppit);
-		}
-
-		for (int i = 0; i < nump; ++i)
-		{
-			applyRelocate(ppits[i], newps[i]);
-		}
 
 
-		vertex_points_map_temp.clear();
-		edge_points_map_temp.clear();
-		CaculateAssinCost();
-		OneRingPoint = newps;
-	}
-
-
-	//vertex_points_map_temp.clear();
-	//edge_points_map_temp.clear();
-	//GetVaild();
 
 	assin_points.clear();
 	for (auto ipit = points_input.begin(); ipit != points_input.end(); ++ipit)
@@ -376,13 +371,39 @@ void OTR::GetVaild()
 	}
 }
 
+void OTR::GetVaild2()
+{
+	ms2.Clear();
+	assin_points.clear();
+	for (auto epmit = edge_points_map_temp.begin(); epmit != edge_points_map_temp.end(); ++epmit)
+	{
+		Segment s = epmit->first;
+		double len = sqrt(s.squared_length());
+		if (!epmit->second.assined_points.empty()|| len<1)
+		{
+			ms2.edges.insert(epmit->first);
+			ms2.Vertexs.insert(epmit->first.source());
+			ms2.Vertexs.insert(epmit->first.target());
+		}
+	}
+	for (auto ipit = points_input.begin(); ipit != points_input.end(); ++ipit)
+	{
+
+		Point ip = *ipit;
+		if (ms2.Vertexs.find(ip) == ms2.Vertexs.end())
+		{
+			assin_points.push_back(ip);
+		}
+	}
+}
+
 void OTR::GetVaild1()
 {
 	ms2.Clear();
 	assin_points.clear();
 	for (auto epmit = edge_points_map_temp.begin(); epmit != edge_points_map_temp.end(); ++epmit)
 	{
-		if (epmit->second.assined_points.size()>=7)
+		if (epmit->second.assined_points.size()>=3)
 		{
 			ms2.edges.insert(epmit->first);
 			ms2.Vertexs.insert(epmit->first.source());
@@ -628,7 +649,7 @@ double OTR::CaculateAssinCost()
 	//{
 	//	eitstore.push_back(eit);
 	//}
-
+	ms2.BuildSampleKDtree();
 	for (auto apit = assin_points.begin(); apit != assin_points.end(); apit++)
 	{
 
@@ -669,7 +690,17 @@ double OTR::CaculateAssinCost()
 			}
 		}
 	}
-
+	for (auto eeit=ms2.edges.begin();eeit!=ms2.edges.end();eeit++)
+	{
+		Segment ee = *eeit;
+		Segment tee= twin_edge(ee);
+		if(edge_points_map_temp.find(ee)==edge_points_map_temp.end()&& edge_points_map_temp.find(tee) == edge_points_map_temp.end())
+		{
+			_Cost cost;
+			cost.assined_points.clear();
+			edge_points_map_temp.insert(pair<Segment, _Cost>(ee, cost));
+		}
+	}
 
 	double cost=CaculateEachEdgeCost();
 
@@ -706,7 +737,7 @@ double OTR::CaculateEachEdgeCost()
 	}
 	for (auto deit=Delete_edge.begin();deit!=Delete_edge.end();deit++)		//删除已经分配给顶点的那些边
 	{
-		edge_points_map_temp.erase(*deit);
+		edge_points_map_temp.find(*deit)->second.assined_points.clear();
 	}
 	Delete_edge.clear();
 	return totalcost;

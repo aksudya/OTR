@@ -106,6 +106,7 @@ public:
 	void PickAndCollap();		//	选取队列中第一条边合并
 	void GetVaild();			//获取有效边并更新ms2
 	void GetVaild1();			//获取有效边并更新ms2
+	void GetVaild2();
 	void GetOneRingEdge(vector<Point> s);		//获取一圈的边
 
 	double CaculateAssinCost();		//计算当前分配方案总代价

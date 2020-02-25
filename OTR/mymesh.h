@@ -9,6 +9,7 @@
 #include <CGAL/Polygon_2.h>
 #include <CGAL/Periodic_3_triangulation_3.h>
 #include <CGAL/point_generators_3.h>
+#include <CGAL/Optimal_transportation_reconstruction_2.h>
 //#include <gl/GLUT.h>
 #include <iostream>
 #include <cmath>
@@ -31,6 +32,7 @@
 #include <osgDB\ReadFile>
 #include <osg\Node>
 #include <omp.h>
+#include "nanoflann.hpp"
 //#define METHED2
 
 using namespace std;
@@ -75,12 +77,16 @@ public:
 	set<Segment, Segment_more> edges;
 	//set<Point> IsoVertexs;
 
+	Tree sampe_tree;
+	map<Point,Segment> sample_map;
+	 
 	mymesh();
 	~mymesh();
 
 	Point FindNearestVertex(Point &p);
 	Segment FindNearestEdge(Point& p);
 	int MakeCollaps(const Point& s, const Point& t);
+	void BuildSampleKDtree();
 	void Clear();
 
 	mymesh& operator = (const mymesh& t) 
