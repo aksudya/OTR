@@ -36,6 +36,7 @@
 //#define METHED2
 
 using namespace std;
+using namespace nanoflann;
 
 typedef CGAL::Exact_predicates_inexact_constructions_kernel K;
 
@@ -54,6 +55,51 @@ typedef CGAL::Search_traits_3<K> TreeTraits;
 typedef CGAL::Orthogonal_k_neighbor_search<TreeTraits> Neighbor_search;
 typedef Neighbor_search::Tree Tree;
 
+struct apcitem
+{
+	Point p;
+	Segment s;
+};
+
+struct annPointCloud
+{
+	vector<apcitem>  pts;
+	void clear() { pts.clear(); }
+};
+
+struct PointCloudAdaptor
+{
+
+	const annPointCloud& obj; //!< A const ref to the data set origin
+
+	/// The constructor that sets the data set source
+	PointCloudAdaptor(const annPointCloud& obj_) : obj(obj_) { }
+
+	/// CRTP helper method
+	inline const annPointCloud& derived() const { return obj; }
+
+	// Must return the number of data points
+	inline size_t kdtree_get_point_count() const { return derived().pts.size(); }
+
+	// Returns the dim'th component of the idx'th point in the class:
+	// Since this is inlined and the "dim" argument is typically an immediate value, the
+	//  "if/else's" are actually solved at compile time.
+	inline double kdtree_get_pt(const size_t idx, const size_t dim) const
+	{
+		if (dim == 0) return derived().pts[idx].p.x();
+		else if (dim == 1) return derived().pts[idx].p.y();
+		else return derived().pts[idx].p.z();
+	}
+
+	template <class BBOX>
+	bool kdtree_get_bbox(BBOX& /*bb*/) const { return false; }
+};
+
+typedef KDTreeSingleIndexAdaptor<
+	L2_Simple_Adaptor<double, PointCloudAdaptor >,
+	PointCloudAdaptor,
+	3 /* dim */
+> my_kd_tree_t;
 
 struct Segment_more {
 	bool operator()(const Segment& s1, const Segment& s2) const
@@ -77,14 +123,18 @@ public:
 	set<Segment, Segment_more> edges;
 	//set<Point> IsoVertexs;
 
-	Tree sampe_tree;
+	//Tree sampe_tree;
 	map<Point,Segment> sample_map;
-	 
+
+	annPointCloud cloud;
+
+
+
 	mymesh();
 	~mymesh();
 
 	Point FindNearestVertex(Point &p);
-	Segment FindNearestEdge(Point& p);
+	Segment FindNearestEdge(Point& p, my_kd_tree_t index1);
 	int MakeCollaps(const Point& s, const Point& t);
 	void BuildSampleKDtree();
 	void Clear();

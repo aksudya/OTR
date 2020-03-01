@@ -4,6 +4,7 @@
 
 mymesh::mymesh()
 {
+
 }
 
 
@@ -28,7 +29,7 @@ Point mymesh::FindNearestVertex(Point& p)
 	return re;
 }
 
-Segment mymesh::FindNearestEdge(Point& p)
+Segment mymesh::FindNearestEdge(Point& p, my_kd_tree_t index1)
 {
 //	double min = DBL_MAX;
 //	Segment re;
@@ -59,16 +60,18 @@ Segment mymesh::FindNearestEdge(Point& p)
 //	}
 	//omp_destroy_lock(&lock);
 
-	Neighbor_search search(sampe_tree, p, 1);
-	Point re;
-	for (Neighbor_search::iterator it = search.begin(); it != search.end(); ++it)
-	{
-		re = it->first;
-	}
+	//Neighbor_search search(sampe_tree, p, 1);
+	//Point re;
+	//for (Neighbor_search::iterator it = search.begin(); it != search.end(); ++it)
+	//{
+	//	re = it->first;
+	//}
 
-	Segment res = sample_map.find(re)->second;
+	//Segment res = sample_map.find(re)->second;
 
-	return res;
+	//return res;
+
+
 }
 
 int mymesh::MakeCollaps(const Point& s, const Point& t)
@@ -148,11 +151,37 @@ int mymesh::MakeCollaps(const Point& s, const Point& t)
 
 void mymesh::BuildSampleKDtree()
 {
-	sample_map.clear();
-	sampe_tree.clear();
-	int n = 5;
-	//set<Point> sample_ponts;
+	//sample_map.clear();
+	//sampe_tree.clear();
+	//int n = 5;
+	////set<Point> sample_ponts;
 
+	//for (auto eit = edges.begin(); eit != edges.end(); ++eit)
+	//{
+	//	Segment e = *eit;
+	//	int a = 0;
+	//	int b = n;
+	//	for (int i = 0; i < n - 1; ++i)
+	//	{
+	//		a++;
+	//		b--;
+	//		double xx = (b * e.source().x() + a * e.target().x()) / (double)n;
+	//		double yy = (b * e.source().y() + a * e.target().y()) / (double)n;
+	//		double zz = (b * e.source().z() + a * e.target().z()) / (double)n;
+	//		Point pp(xx, yy,zz);
+	//		sampe_tree.insert(pp);
+	//		//sample_ponts.insert(pp);
+	//		sample_map.insert(pair<Point, Segment>(pp, e));
+	//	}
+	//	//sampe_tree.insert(e.source());
+	//	//sampe_tree.insert(e.target());
+	//	//sample_map.insert(pair<Point, Segment>(e.source(), e));
+	//	//sample_map.insert(pair<Point, Segment>(e.target(), e));
+	//}
+	////sampe_tree.insert(sample_ponts.begin(), sample_ponts.end());
+
+	cloud.clear();
+	int n = 5;
 	for (auto eit = edges.begin(); eit != edges.end(); ++eit)
 	{
 		Segment e = *eit;
@@ -165,17 +194,15 @@ void mymesh::BuildSampleKDtree()
 			double xx = (b * e.source().x() + a * e.target().x()) / (double)n;
 			double yy = (b * e.source().y() + a * e.target().y()) / (double)n;
 			double zz = (b * e.source().z() + a * e.target().z()) / (double)n;
-			Point pp(xx, yy,zz);
-			sampe_tree.insert(pp);
-			//sample_ponts.insert(pp);
-			sample_map.insert(pair<Point, Segment>(pp, e));
+			Point pp(xx, yy, zz);
+			apcitem titem;
+			titem.p = pp;
+			titem.s = e;
+			cloud.pts.push_back(titem);
 		}
-		//sampe_tree.insert(e.source());
-		//sampe_tree.insert(e.target());
-		//sample_map.insert(pair<Point, Segment>(e.source(), e));
-		//sample_map.insert(pair<Point, Segment>(e.target(), e));
 	}
-	//sampe_tree.insert(sample_ponts.begin(), sample_ponts.end());
+	
+	
 	
 }
 

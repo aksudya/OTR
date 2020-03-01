@@ -10,7 +10,7 @@ void OTR::Init(vector<Point> input)
 	default_random_engine engine(2);
 	vector<bool> index(input.size(),false);
 	uniform_int_distribution<int> ud(0, input.size() - 1);
-	for (int i = 0; i < 1*input.size(); ++i)
+	for (int i = 0; i < 0.2*input.size(); ++i)
 	{
 		int id = ud(engine);
 		while (index[id])
@@ -650,15 +650,36 @@ double OTR::CaculateAssinCost()
 	//	eitstore.push_back(eit);
 	//}
 	ms2.BuildSampleKDtree();
+	const PointCloudAdaptor  pc2kd1(ms2.cloud);
+	my_kd_tree_t   index1(3 /*dim*/, pc2kd1, KDTreeSingleIndexAdaptorParams(10 /* max leaf */));
+	index1.buildIndex();
+
+	const size_t num_results = 1;
+	size_t ret_index;
+	double out_dist_sqr;
+	nanoflann::KNNResultSet<double> resultSet(num_results);
+
 	for (auto apit = assin_points.begin(); apit != assin_points.end(); apit++)
 	{
 
 		//auto apit = eitstore[i];
 		Point pnow = *apit;
-		Segment nearest_edge = ms2.FindNearestEdge(pnow);
+
+		double query_pt[3] = { pnow.x(), pnow.y(), pnow.z() };
+
+		//const size_t num_results = 1;
+		//size_t ret_index;
+		//double out_dist_sqr;
+		//nanoflann::KNNResultSet<double> resultSet(num_results);
+		resultSet.init(&ret_index, &out_dist_sqr);
+		index1.findNeighbors(resultSet, &query_pt[0], nanoflann::SearchParams(10));
+
+		Segment nearest_edge = ms2.cloud.pts[ret_index].s;
+		//double dist2 = out_dist_sqr;
+		//Segment nearest_edge = ms2.FindNearestEdge(pnow,index1);
 
 
-		double dist2 = get_p_to_edge(pnow, nearest_edge);
+		//double dist2 = get_p_to_edge(pnow, nearest_edge);
 
 		Segment twinn = twin_edge(nearest_edge);
 		auto iter = edge_points_map_temp.find(nearest_edge);		//找最近的那条边e

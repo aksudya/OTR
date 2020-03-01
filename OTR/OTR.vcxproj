@@ -173,6 +173,7 @@
     <ClInclude Include="mymesh.h" />
     <ClInclude Include="nanoflann.hpp" />
     <ClInclude Include="otr.h" />
+    <ClInclude Include="pointcloudadapter.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
