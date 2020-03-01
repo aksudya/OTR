@@ -86,6 +86,7 @@ public:
 	vector<vertex_pair> block_edge;				//
 
 	vector<Point> assin_points;					//待分配的顶点
+	vector<Point> local_points;					//局部的待分配的顶点
 
 	vector<Segment> Delete_edge;				//分配到顶点后从边表中删除的边
 
@@ -109,6 +110,7 @@ public:
 	void GetVaild2();
 	void GetOneRingEdge(vector<Point> s);		//获取一圈的边
 
+	void CollectLocalPoints(Segment e);			//收集合并边e时需要重新计算的点
 	double CaculateAssinCost();		//计算当前分配方案总代价
 	double CaculateEachEdgeCost();	//计算每条边的代价
 	double PointProjectToSource(Segment e, Point p);	//计算点p在e上的投影到e原点的距离

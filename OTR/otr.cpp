@@ -639,6 +639,11 @@ void OTR::applyRelocate(Point& s, Point& t)
 
 
 
+void OTR::CollectLocalPoints(Segment e)
+{
+
+}
+
 double OTR::CaculateAssinCost()
 {
 	
