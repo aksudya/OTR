@@ -379,7 +379,7 @@ void OTR::GetVaild2()
 	{
 		Segment s = epmit->first;
 		double len = sqrt(s.squared_length());
-		if (!epmit->second.assined_points.empty()|| len<1)
+		if (!epmit->second.assined_points.empty()|| len<0.5)
 		{
 			ms2.edges.insert(epmit->first);
 			ms2.Vertexs.insert(epmit->first.source());
@@ -651,7 +651,7 @@ double OTR::CaculateAssinCost()
 	//}
 	ms2.BuildSampleKDtree();
 	const PointCloudAdaptor  pc2kd1(ms2.cloud);
-	my_kd_tree_t   index1(3 /*dim*/, pc2kd1, KDTreeSingleIndexAdaptorParams(10 /* max leaf */));
+	my_kd_tree_t   index1(3 /*dim*/, pc2kd1, KDTreeSingleIndexAdaptorParams(10/* max leaf */));
 	index1.buildIndex();
 
 	const size_t num_results = 1;

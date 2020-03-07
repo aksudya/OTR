@@ -19,15 +19,26 @@ void otr_extrat()
 
 	ifstream infile;
 
-	infile.open("Shape03.txt", ios::in);
+	infile.open("fant2.xyz", ios::in);
 	while (!infile.eof())           
 	{
 		double x, y,z;
-		infile >> x >>y;
-		Point p(x, y,0);
+		infile >> x >>y>>z;
+		Point p(x, y,z);
 		points_1.push_back(p);
 		
 	}
+
+	//default_random_engine eee(2);
+	//uniform_real_distribution<double> ud(0, 1);
+	//for (int i = 0; i < 50; i++)
+	//{
+	//	double x = ud(eee);
+	//	double y = ud(eee);
+	//	double z = ud(eee);
+	//	Point p(x, y, z);
+	//	points_1.push_back(p);
+	//}
 	
 
 	ifstream infile1;
@@ -174,7 +185,7 @@ public:
 					a.PickAndCollap();
 					//refreashLines();
 					//refreashPointsre();
-				}while (a.ms2.Vertexs.size()>=20);
+				}while (a.ms2.Vertexs.size()>=50);
 
 				viewer->getSceneData()->asGroup()->removeChild(points_node);
 				viewer->getSceneData()->asGroup()->removeChild(line_node);
