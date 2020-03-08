@@ -122,6 +122,8 @@ class mymesh
 public:
 	set<Point> Vertexs;
 	set<Segment, Segment_more> edges;
+
+	map<Point, list<Segment>> pe_map;	//╣Ц╣даз╫с╠ъ
 	//set<Point> IsoVertexs;
 
 	//Tree sampe_tree;
