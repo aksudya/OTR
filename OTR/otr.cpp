@@ -52,12 +52,12 @@ void OTR::Init(vector<Point> input)
 	iter_times = 0;
 	ms2 = ms1;
 
-	for (auto eit = ms2.edges.begin(); eit != ms2.edges.end(); ++eit)
-	{
-		Segment sss = *eit;
-		to_be_Collaps.insert(sss);
-		to_be_Collaps.insert(twin_edge(sss));
-	}
+	//for (auto eit = ms2.edges.begin(); eit != ms2.edges.end(); ++eit)
+	//{
+	//	Segment sss = *eit;
+	//	to_be_Collaps.insert(sss);
+	//	to_be_Collaps.insert(twin_edge(sss));
+	//}
 	
 #ifdef METHED2
 	CaculateAssinCost();
@@ -379,7 +379,7 @@ void OTR::GetVaild2()
 	{
 		Segment s = epmit->first;
 		double len = sqrt(s.squared_length());
-		if (!epmit->second.assined_points.empty()|| len<0.1)
+		if (!epmit->second.assined_points.empty()|| len<0.07)
 		{
 			ms2.edges.insert(epmit->first);
 			ms2.Vertexs.insert(epmit->first.source());
@@ -403,7 +403,7 @@ void OTR::GetVaild1()
 	assin_points.clear();
 	for (auto epmit = edge_points_map_temp.begin(); epmit != edge_points_map_temp.end(); ++epmit)
 	{
-		if (epmit->second.assined_points.size()>=3)
+		if (epmit->second.assined_points.size()>=5)
 		{
 			ms2.edges.insert(epmit->first);
 			ms2.Vertexs.insert(epmit->first.source());

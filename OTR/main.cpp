@@ -19,7 +19,7 @@ void otr_extrat()
 
 	ifstream infile;
 
-	infile.open("points_on_edges_mec.xyz", ios::in);
+	infile.open("points_on_edges_mec2.xyz", ios::in);
 	while (!infile.eof())           
 	{
 		double x, y,z;
@@ -185,7 +185,7 @@ public:
 					a.PickAndCollap();
 					//refreashLines();
 					//refreashPointsre();
-				}while (a.ms2.Vertexs.size()>=50);
+				}while (a.ms2.Vertexs.size()>=120);
 
 				viewer->getSceneData()->asGroup()->removeChild(points_node);
 				viewer->getSceneData()->asGroup()->removeChild(line_node);
@@ -197,7 +197,7 @@ public:
 			if (ea.getKey() == osgGA::GUIEventAdapter::KEY_F1)
 			{
 				a.CaculateAssinCost();
-				a.GetVaild();
+				a.GetVaild1();
 
 				a.vertex_points_map_temp.clear();
 				a.edge_points_map_temp.clear();
@@ -213,6 +213,12 @@ public:
 				a.CaculateAssinCost();
 				a.GetVaild2();
 
+				for (auto eit = a.ms2.edges.begin(); eit != a.ms2.edges.end(); ++eit)
+				{
+					Segment sss = *eit;
+					a.to_be_Collaps.insert(sss);
+					a.to_be_Collaps.insert(a.twin_edge(sss));
+				}
 				a.vertex_points_map_temp.clear();
 				a.edge_points_map_temp.clear();
 
