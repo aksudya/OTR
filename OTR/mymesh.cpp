@@ -79,7 +79,7 @@ int mymesh::MakeCollaps(const Point& s, const Point& t)
 	vector<Point> stars;
 	vector<Point> starp;
 	Vertexs.erase(s);
-	for (auto eit=edges.begin();eit!=edges.end();++eit)
+	/*for (auto eit=edges.begin();eit!=edges.end();++eit)
 	{
 		if(eit->source()==s)
 		{
@@ -113,6 +113,18 @@ int mymesh::MakeCollaps(const Point& s, const Point& t)
 				starp.push_back(eit->source());
 			}
 		}
+	}*/
+
+	list<Segment> sedge = pe_map.at(s);
+	for (auto evit=sedge.begin();evit!=sedge.end();++evit)
+	{
+		stars.push_back(evit->target());
+	}
+
+	list<Segment> pedge = pe_map.at(t);
+	for (auto evit = pedge.begin(); evit != pedge.end(); ++evit)
+	{
+		starp.push_back(evit->target());
 	}
 
 	for (auto sit=stars.begin();sit!=stars.end();++sit)
@@ -123,24 +135,45 @@ int mymesh::MakeCollaps(const Point& s, const Point& t)
 		
 		edges.erase(ss1);
 		edges.erase(ss2);
-
+		pe_map.at(*sit).erase(find(pe_map.at(*sit).begin(), pe_map.at(*sit).end(), ss1));
 
 		Segment si1(*sit, t);
 		Segment si2(t, *sit);
-		if (edges.find(si1) == edges.end() && edges.find(si2) == edges.end())
+		if(find(pe_map.at(t).begin(),pe_map.at(t).end(), si2)!= pe_map.at(t).end())
 		{
 			edges.insert(si1);
+			pe_map.at(t).push_back(si2);
 		}
+
+		if (find(pe_map.at(*sit).begin(), pe_map.at(*sit).end(), si1) != pe_map.at(*sit).end())
+		{
+			//edges.insert(si1);
+			pe_map.at(*sit).push_back(si1);
+		}
+		//pe_map.at(*sit).push_back(si2);
+
+
+		/*if (edges.find(si1) == edges.end() && edges.find(si2) == edges.end())
+		{
+			edges.insert(si1);
+			pe_map.at(t).push_back(si2);
+		}*/
+
+		
+		
 	}
 	Segment ss1(s, t);
 	Segment ss2(t, s);
 
 	edges.erase(ss1);
 	edges.erase(ss2);
+	pe_map.erase(s);
+	pe_map.at(t).erase(find(pe_map.at(t).begin(),pe_map.at(t).end(),ss2));
 
 	if(stars.empty()&&starp.empty())
 	{
 		Vertexs.erase(t);
+		pe_map.erase(t);
 		return 1;
 	}
 	else

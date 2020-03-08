@@ -10,7 +10,7 @@ void OTR::Init(vector<Point> input)
 	default_random_engine engine(2);
 	vector<bool> index(input.size(),false);
 	uniform_int_distribution<int> ud(0, input.size() - 1);
-	for (int i = 0; i < 0.1*input.size(); ++i)
+	for (int i = 0; i < 0.2*input.size(); ++i)
 	{
 		int id = ud(engine);
 		while (index[id])
@@ -36,12 +36,19 @@ void OTR::Init(vector<Point> input)
 	{
 		ms1.Vertexs.insert(vit->point());
 		
-		auto cviter = delaunay_input.finite_adjacent_vertices(vit);
-		
-		for (int i = 0; i < ; ++i)
+		vector<d_vertex_handle> outit;
+		delaunay_input.tds().adjacent_vertices(vit, std::back_inserter(outit));
+		list<Segment> adjacent_edge;
+		for (auto cvit=outit.begin();cvit!=outit.end();++cvit)
 		{
-			auto temp = cviter;
+			d_vertex_handle v = *cvit;
+			Point p1= v->point();
+			Point p2 = vit->point();
+			Segment s(p2, p1);
+			adjacent_edge.push_back(s);
+
 		}
+		ms1.pe_map.insert(pair<Point, list<Segment>>(vit->point(), adjacent_edge));
 
 	}
 
@@ -60,12 +67,12 @@ void OTR::Init(vector<Point> input)
 	iter_times = 0;
 	ms2 = ms1;
 
-	for (auto eit = ms2.edges.begin(); eit != ms2.edges.end(); ++eit)
+	/*for (auto eit = ms2.edges.begin(); eit != ms2.edges.end(); ++eit)
 	{
 		Segment sss = *eit;
 		to_be_Collaps.insert(sss);
 		to_be_Collaps.insert(twin_edge(sss));
-	}
+	}*/
 	
 #ifdef METHED2
 	CaculateAssinCost();
@@ -387,7 +394,7 @@ void OTR::GetVaild2()
 	{
 		Segment s = epmit->first;
 		double len = sqrt(s.squared_length());
-		if (!epmit->second.assined_points.empty()|| len<0.1)
+		if (!epmit->second.assined_points.empty()|| len<0.5)
 		{
 			ms2.edges.insert(epmit->first);
 			ms2.Vertexs.insert(epmit->first.source());

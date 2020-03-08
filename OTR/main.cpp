@@ -19,12 +19,12 @@ void otr_extrat()
 
 	ifstream infile;
 
-	infile.open("points_on_edges_mec.xyz", ios::in);
+	infile.open("Shape03.txt", ios::in);
 	while (!infile.eof())           
 	{
 		double x, y,z;
-		infile >> x >>y>>z;
-		Point p(x, y,z);
+		infile >> x >>y;
+		Point p(x, y,0);
 		points_1.push_back(p);
 		
 	}
@@ -212,7 +212,12 @@ public:
 			{
 				a.CaculateAssinCost();
 				a.GetVaild2();
-
+				for (auto eit = a.ms2.edges.begin(); eit != a.ms2.edges.end(); ++eit)
+				{
+					Segment sss = *eit;
+					a.to_be_Collaps.insert(sss);
+					a.to_be_Collaps.insert(a.twin_edge(sss));
+				}
 				a.vertex_points_map_temp.clear();
 				a.edge_points_map_temp.clear();
 

@@ -47,6 +47,7 @@ typedef CGAL::Delaunay_triangulation_3<K>					Delaunay;
 typedef CGAL::Triangulation_3<K>							Triangulation;
 typedef Triangulation::Edge									Edge;
 
+typedef Delaunay::Vertex_handle								d_vertex_handle;
 typedef Triangulation::Vertex_handle						vertex_handle;
 typedef K::Segment_3										Segment;
 typedef CGAL::Polygon_2<K>									Polygon_2;
