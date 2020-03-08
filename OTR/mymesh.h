@@ -33,6 +33,7 @@
 #include <osg\Node>
 #include <omp.h>
 #include "nanoflann.hpp"
+#include <unordered_set>
 //#define METHED2
 
 using namespace std;

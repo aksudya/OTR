@@ -10,7 +10,7 @@ void OTR::Init(vector<Point> input)
 	default_random_engine engine(2);
 	vector<bool> index(input.size(),false);
 	uniform_int_distribution<int> ud(0, input.size() - 1);
-	for (int i = 0; i < 0.2*input.size(); ++i)
+	for (int i = 0; i < 0.1*input.size(); ++i)
 	{
 		int id = ud(engine);
 		while (index[id])
@@ -379,7 +379,7 @@ void OTR::GetVaild2()
 	{
 		Segment s = epmit->first;
 		double len = sqrt(s.squared_length());
-		if (!epmit->second.assined_points.empty()|| len<0.5)
+		if (!epmit->second.assined_points.empty()|| len<0.1)
 		{
 			ms2.edges.insert(epmit->first);
 			ms2.Vertexs.insert(epmit->first.source());

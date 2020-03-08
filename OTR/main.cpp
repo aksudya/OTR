@@ -19,7 +19,7 @@ void otr_extrat()
 
 	ifstream infile;
 
-	infile.open("fant2.xyz", ios::in);
+	infile.open("points_on_edges_mec.xyz", ios::in);
 	while (!infile.eof())           
 	{
 		double x, y,z;
