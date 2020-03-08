@@ -35,6 +35,14 @@ void OTR::Init(vector<Point> input)
 	for (auto vit=delaunay_input.finite_vertices_begin();vit!=delaunay_input.finite_vertices_end();++vit)
 	{
 		ms1.Vertexs.insert(vit->point());
+		
+		auto cviter = delaunay_input.finite_adjacent_vertices(vit);
+		
+		for (int i = 0; i < ; ++i)
+		{
+			auto temp = cviter;
+		}
+
 	}
 
 	for (auto eit = delaunay_input.finite_edges_begin(); eit != delaunay_input.finite_edges_end(); ++eit)

@@ -3,6 +3,7 @@
 #include <CGAL/point_generators_2.h>
 //#include <CGAL/Optimal_transportation_reconstruction_2.h>
 #include <CGAL/Delaunay_triangulation_3.h>
+#include <CGAL/Triangulation_3.h>
 #include <queue>
 #include <CGAL/Point_set_3.h>
 #include <list>
