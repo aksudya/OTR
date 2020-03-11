@@ -45,7 +45,7 @@ void otr_extrat()
 
 	osg::ref_ptr<osg::Vec3Array> coords1 = new osg::Vec3Array();
 	osg::ref_ptr<osg::Vec4Array> color1 = new osg::Vec4Array();
-	infile1.open("fan.xyz", ios::in);
+	infile1.open("points.xyz", ios::in);
 	while (!infile1.eof())
 	{
 		double x, y, z;
